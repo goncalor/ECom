@@ -28,8 +28,9 @@ char ReadSpihd(char address)
 		SW_SCK_PIN = 1; // Set the SCK pin
 		Nop(); // Pause a little bit
 	}
+
 	TRIS_SW_DIO_PIN = 1; // Make the DOUT pin an input
-	for(Bit=0;Bit<10;Bit++) Nop();
+
 	for(Bit=7; Bit>=0;Bit--)
 	{
 		SW_SCK_PIN = 0; // Clear the SCK pin
@@ -39,8 +40,7 @@ char ReadSpihd(char address)
 		Nop(); // Pause a little bit
 	}
 	SW_CS_PIN = 1; // Disable the mouse
-	
-	for(Bit=0;Bit<10;Bit++) Nop();
+
 	return(input); // Return the received data
 }
 
@@ -61,17 +61,16 @@ void WriteSpihd(char address, char content)
 		SW_SCK_PIN = 1; // Set the SCK pin
 		Nop(); // Pause a little bit
 	}
-	for(Bit=0;Bit<10;Bit++) Nop();
+
 	for(Bit=7; Bit>=0;Bit--)
 	{
 		SW_SCK_PIN = 0; // Clear the SCK pin
 		Nop(); // Pause a little bit
-		SW_DIO_PIN = (content>>Bit)&1; // Set the Data line with a bit of the address
+		SW_DIO_PIN = (content>>Bit)&1; // Set the Data line with a bit of the content
 		SW_SCK_PIN = 1; // Set the SCK pin
 		Nop(); // Pause a little bit
 	}
 	SW_CS_PIN = 1; // Disable the mouse
-	
-	for(Bit=0;Bit<10;Bit++) Nop();
+
 	return; 
 }
