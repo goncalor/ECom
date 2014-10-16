@@ -44,6 +44,7 @@
 #include "io_cfg.h"             // I/O pin mapping
 #include "user\user.h"
 #include "user\temperature.h"
+#include "user\spihd.h"
 #include "def_ports.h"								// Port definitions
 
 /** V A R I A B L E S ********************************************************/
@@ -111,6 +112,18 @@ void ServiceRequests(void)
         counter = 0;
         switch(dataPacket.CMD)
         {
+			//read:
+			case 0x03:
+				dataPacket._byte[3] = ReadSpihd(dataPacket._byte[1]);
+				counter=0x04;
+				break;
+			//write:
+			case 0x04:
+				WriteSpihd(dataPacket._byte[1],dataPacket._byte[2]);
+				dataPacket._byte[4]=0x01;
+				counter = 0x05;
+				break;
+			//original:
             case READ_VERSION:
                 //dataPacket._byte[1] is len
                 dataPacket._byte[2] = !PB4; // Switch 2 status

@@ -63,6 +63,8 @@ HANDLE myInPipe;
 void GetSummary(void);
 void LoadDLL(void);
 void GetDataFromPIC(void);
+char ReadAddress(char address);
+void WriteToAddress(char address,char data);
 DWORD SendReceivePacket(BYTE *SendData, DWORD SendLength, BYTE *ReceiveData,
                     DWORD *ReceiveLength, UINT SendDelay, UINT ReceiveDelay);
 void CheckInvalidHandle(void);
@@ -71,6 +73,8 @@ void CheckInvalidHandle(void);
 
 int main(int argc, char* argv[])
 {
+    INT8 deltax,deltay;
+    POINT point;
     BOOLEAN bQuit;
     DWORD selection;
     bQuit = false;
@@ -85,27 +89,64 @@ int main(int argc, char* argv[])
     printf("===============================\r\n");
     while(!bQuit)
     {
-        printf("Select an option\r\n");
+        printf("Select an option\r\n");/*
         printf("[1] Get this application version\r\n");
-        printf("[2] List boards present\r\n");
+        */printf("[0] List boards present\r\n");/*
         printf("[3] Asks the PIC for the status of the switches S2 and S3\r\n");
-        printf("[4] Quit\r\n>>");
+        */
+        printf("[1] Read from address 0x00\r\n");
+        printf("[2] Write to address 0x0d\r\n");
+        printf("[3] Read from address 0x0d\r\n");
+        printf("[4] Read from addresses 0x03 e 0x04\r\n");
+        printf("[5] Quit\r\n");
+        printf("[6] Begin Mouse Operation\r\n>>");
         scanf("%d",&selection);
 
         switch(selection)
-        {
+        {/*
             case 1:
                 temp = MPUSBGetDLLVersion();
                 printf("MPUSBAPI Version: %d.%d\r\n",HIWORD(temp),LOWORD(temp));
-                break;
-            case 2:
+                break;*/
+            case 0:
                 GetSummary();
-                break;
+                break;/*
             case 3:
                 GetDataFromPIC();
                 break;
+
+        */
+            case 1:
+                ReadAddress(0x00);
+                break;
+            case 2:
+                WriteToAddress(0x0d,0x01);
+                break;
+            case 3:
+                ReadAddress(0x0d);
+                break;
             case 4:
+                ReadAddress(0x03);
+                ReadAddress(0x04);
+                break;
+            case 5:
                 bQuit = true;
+                break;
+            case 6:
+                while(1){
+                    deltax = (INT8) ReadAddress(0x03);
+                    deltay = (INT8) ReadAddress(0x04);
+
+                    if(GetCursorPos(&point)){
+                        if(!SetCursorPos(point.x - deltax,point.y + deltay)){
+                            puts("Erro: Escrita da posicao do rato");
+                            break;
+                        }
+                    }else{
+                        puts("Erro: Leitura da posicao do rato");
+                        break;
+                    }
+                }
                 break;
             default:
                 break;
@@ -266,6 +307,98 @@ void GetDataFromPIC(void)
 
 }//end GetUSBDemoFWVersion
 
+char ReadAddress(char address)
+{
+    // First we need to open data pipes...
+    DWORD selection;
+    selection = 0; // Assumes only one board is connected to PC through USB and it has index 0
+    fflush(stdin);
+
+    myOutPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_WRITE,0);
+    myInPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_READ,0);
+    if(myOutPipe == INVALID_HANDLE_VALUE || myInPipe == INVALID_HANDLE_VALUE)
+    {
+        printf("Failed to open data pipes.\r\n");
+        return 0;
+    }//end if
+
+
+    // Read command: 3
+    // Request format: <Read Command><Address><Expected Reply Length>
+    // Reply format: <Read Command><Address><Expected Reply Length><Address content>
+
+    BYTE send_buf[64],receive_buf[64];
+    DWORD RecvLength=4;
+
+    send_buf[0] = 3;      // Command
+    send_buf[1] = (BYTE) address;
+    send_buf[2] = 0x01;              // Expected length of the result
+
+    if(SendReceivePacket(send_buf,3,receive_buf,&RecvLength,1000,1000) == 1)
+    {
+        /*if(*/RecvLength == 4 && receive_buf[0] == 3 &&
+            receive_buf[2] == 0x01/*)*/;
+        //{
+            //printf("Value %x read from address %x\r\n",receive_buf[3],receive_buf[1]);
+        //}
+    }
+    else
+        printf("USB Operation Failed\r\n");
+
+    // Let's close the data pipes since we have nothing left to do..
+    MPUSBClose(myOutPipe);
+    MPUSBClose(myInPipe);
+    myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
+    return(receive_buf[3]);
+}
+void WriteToAddress(char address,char data)
+{
+    // First we need to open data pipes...
+    DWORD selection;
+    selection = 0; // Assumes only one board is connected to PC through USB and it has index 0
+    fflush(stdin);
+
+    myOutPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_WRITE,0);
+    myInPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_READ,0);
+    if(myOutPipe == INVALID_HANDLE_VALUE || myInPipe == INVALID_HANDLE_VALUE)
+    {
+        printf("Failed to open data pipes.\r\n");
+        return;
+    }//end if
+
+
+    // Write command: 4
+    // Request format: <Command><Address><Content><Expected Reply Length>
+    // Reply Format: <Command><Address><Content><Expected Reply Length><Success>
+    BYTE send_buf[64],receive_buf[64];
+    DWORD RecvLength=5;
+
+    send_buf[0] = 4;      // Command
+    send_buf[1] = (BYTE) address | 0x80;
+    send_buf[2] = (BYTE) data;
+    send_buf[3] = 0x01;              // Expected length of the result
+
+    if(SendReceivePacket(send_buf,4,receive_buf,&RecvLength,1000,1000) == 1)
+    {
+        if(RecvLength == 5 && receive_buf[0] == 4 &&
+            receive_buf[3] == 0x01)
+        {
+            if(receive_buf[4]==1) printf("Write success.\r\n");
+            else printf("Write failure.\r\n");
+        }
+    }
+    else
+        printf("USB Operation Failed\r\n");
+
+    // Let's close the data pipes since we have nothing left to do..
+    MPUSBClose(myOutPipe);
+    MPUSBClose(myInPipe);
+    myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
+
+}
+
+
+
 //---------------------------------------------------------------------------
 
 /////////////////////////////////////////////////////////////////////////////
@@ -328,7 +461,7 @@ void CheckInvalidHandle(void)
         myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
     }//end if
     else
-        printf("Error Code \r\n",GetLastError());
+        printf("*Error Code %d\r\n",GetLastError());
 }//end CheckInvalidHandle
 
 //---------------------------------------------------------------------------
