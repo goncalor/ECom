@@ -123,6 +123,12 @@ void ServiceRequests(void)
 				dataPacket._byte[4]=0x01;
 				counter = 0x05;
 				break;
+			case 0x07:
+				for(counter=0;counter<45;counter++){
+					dataPacket._byte[3+counter] = ReadSpihd(dataPacket._byte[1]);
+				}
+				counter = 0x30;
+				break;
 			//original:
             case READ_VERSION:
                 //dataPacket._byte[1] is len

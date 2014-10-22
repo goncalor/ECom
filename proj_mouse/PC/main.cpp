@@ -65,6 +65,7 @@ void LoadDLL(void);
 void GetDataFromPIC(void);
 char ReadAddress(char address);
 void WriteToAddress(char address,char data);
+void ReadAddress45(char address,char* cenas);
 DWORD SendReceivePacket(BYTE *SendData, DWORD SendLength, BYTE *ReceiveData,
                     DWORD *ReceiveLength, UINT SendDelay, UINT ReceiveDelay);
 void CheckInvalidHandle(void);
@@ -78,6 +79,16 @@ int main(int argc, char* argv[])
     BOOLEAN bQuit;
     DWORD selection;
     bQuit = false;
+
+    int d;
+    UINT8 i,j,k;
+    INT8 buffer[64];
+    INT8 cor;
+    HDC hdcScreen;
+    HDC MemDCExercising;
+    HBITMAP bm;
+    HPEN hPen;
+    HBRUSH hBrush;
 
     // Load DLL when it is necessary, i.e. on start-up!
     LoadDLL();
@@ -99,7 +110,8 @@ int main(int argc, char* argv[])
         printf("[3] Read from address 0x0d\r\n");
         printf("[4] Read from addresses 0x03 e 0x04\r\n");
         printf("[5] Quit\r\n");
-        printf("[6] Begin Mouse Operation\r\n>>");
+        printf("[6] Begin Mouse Operation\r\n");
+        printf("[7] Camera thingy\r\n>>");
         scanf("%d",&selection);
 
         switch(selection)
@@ -148,6 +160,45 @@ int main(int argc, char* argv[])
                     }
                 }
                 break;
+            case 7:
+                d = 10;
+                cor = 0;
+                hdcScreen = GetDC( NULL );
+                MemDCExercising = CreateCompatibleDC(hdcScreen);
+                bm = CreateCompatibleBitmap( hdcScreen, 15*d,15*d);
+                /*for(i=0;i<15;i++){
+                    for(j=0;j<15;j++){
+                        cor = (UINT8) ReadAddress(0x0b);
+                        cor = cor & 0x7f;
+                        SelectObject(MemDCExercising, bm);
+                        hBrush = CreateSolidBrush(RGB(cor,cor,cor));
+                        SelectObject(MemDCExercising, hBrush);
+                        hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
+                        SelectObject(MemDCExercising, hPen);
+                        Rectangle(MemDCExercising, i*d,j*d,(i+1)*d,(j+1)*d);
+                    }
+                }*/
+                for(i=0;i<5;i++){
+                	ReadAddress45(0x0b,buffer);
+                	for(j=0;j<3;j++){
+                		for(k=0;k<15;k++){
+                			cor = buffer[j*15+k];
+                			cor = cor & 0x7f;
+				        SelectObject(MemDCExercising, bm);
+				        hBrush = CreateSolidBrush(RGB(cor,cor,cor));
+				        SelectObject(MemDCExercising, hBrush);
+				        hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
+				        SelectObject(MemDCExercising, hPen);
+                			Rectangle(MemDCExercising, (i*3+j)*d,(14-k)*d,((i*3+j)+1)*d,(15-k)*d);
+                		}
+                	}
+                }
+                BitBlt(hdcScreen, 0, 0, 15*d,
+                15*d, MemDCExercising, 0, 0, SRCCOPY);
+                DeleteObject(hBrush);
+                DeleteObject(hPen);
+                DeleteObject(bm);
+                DeleteDC(MemDCExercising);
             default:
                 break;
         }// end switch
@@ -397,6 +448,54 @@ void WriteToAddress(char address,char data)
 
 }
 
+
+void ReadAddress45(char address,char* cenas)
+{
+    // First we need to open data pipes...
+    DWORD selection;
+    selection = 0; // Assumes only one board is connected to PC through USB and it has index 0
+    fflush(stdin);
+
+    myOutPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_WRITE,0);
+    myInPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_READ,0);
+    if(myOutPipe == INVALID_HANDLE_VALUE || myInPipe == INVALID_HANDLE_VALUE)
+    {
+        printf("Failed to open data pipes.\r\n");
+        return;
+    }//end if
+
+
+    // Read command: 3
+    // Request format: <Read Command><Address><Expected Reply Length>
+    // Reply format: <Read Command><Address><Expected Reply Length><Address content>
+
+    BYTE send_buf[64],receive_buf[64];
+    DWORD RecvLength=48;
+
+    send_buf[0] = 7;      // Command
+    send_buf[1] = (BYTE) address;
+    send_buf[2] = 45;              // Expected length of the result
+
+    if(SendReceivePacket(send_buf,3,receive_buf,&RecvLength,1000,1000) == 1)
+    {
+        /*if(RecvLength == 4 && receive_buf[0] == 3 &&
+            receive_buf[2] == 0x01)*/;
+        //{
+            //printf("Value %x read from address %x\r\n",receive_buf[3],receive_buf[1]);
+        //}
+        strncpy(cenas,&receive_buf[3],45);
+    }
+    else
+        printf("USB Operation Failed\r\n");
+
+    // Let's close the data pipes since we have nothing left to do..
+    MPUSBClose(myOutPipe);
+    MPUSBClose(myInPipe);
+    myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
+
+
+    return;
+}
 
 
 //---------------------------------------------------------------------------
