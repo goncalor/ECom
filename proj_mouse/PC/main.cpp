@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     bQuit = false;
 
     int d;
-    UINT8 i,j,k;
+    UINT16 i,j,k;
     char buffer[64];
     INT8 cor;
     HDC hdcScreen;
@@ -201,8 +201,8 @@ while(1)
                             SelectObject(MemDCExercising, hPen);
                             //Rectangle(MemDCExercising, (i*3+j)*d,(14-k)*d,((i*3+j)+1)*d,(15-k)*d);
                             //Rectangle(MemDCExercising, (j+3*i)*d, (k)*d, (j+3*i+1)*d, (k+1)*d);
-                            if(Rectangle(MemDCExercising, (15-(j+3*i))*d, (15-k)*d, (15-(j+3*i+1))*d, (15-(k+1))*d)==0)
-                                puts("Ouch");
+                            if(Rectangle(MemDCExercising, ((j+3*i))*d, (k)*d, ((j+3*i+1))*d, ((k+1))*d)==0)
+                                puts("Rectangle() error.");
                             DeleteObject(hBrush);
                             DeleteObject(hPen);
                 		}
@@ -487,11 +487,12 @@ void ReadAddress45(char address,char* cenas)
     // Reply format: <Read Command><Address><Expected Reply Length><Address content>
 
     BYTE send_buf[64],receive_buf[64];
-    DWORD RecvLength=48;
+    DWORD RecvLength=49;
+    UINT16 i;
 
     send_buf[0] = 7;      // Command
     send_buf[1] = (BYTE) address;
-    send_buf[2] = 45;              // Expected length of the result
+    send_buf[2] = 46;              // Expected length of the result
 
     if(SendReceivePacket(send_buf,3,receive_buf,&RecvLength,1000,1000) == 1)
     {
@@ -500,7 +501,21 @@ void ReadAddress45(char address,char* cenas)
         //{
             //printf("Value %x read from address %x\r\n",receive_buf[3],receive_buf[1]);
         //}
-        strncpy(cenas,(char*)&receive_buf[3],45);
+        /*if(receive_buf[3+45]=='r'){
+            printf("A mensagem secreta chegou\r\n");
+        }else{
+            printf("A mensagem secreta NAO chegou\r\n");
+        }*/
+        for(i=0;i<45;i++){
+            cenas[i] = receive_buf[3+i];/*
+            if(i!=0){
+                if(receive_buf[i]==receive_buf[i-1]){
+                    printf("O problema é do PIC\r\n");
+                }else{
+                    printf("ILIBEM O PIC, É INOCENTE\r\n");
+                }
+            }*/
+        }
     }
     else
         printf("USB Operation Failed\r\n");

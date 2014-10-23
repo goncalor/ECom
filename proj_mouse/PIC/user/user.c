@@ -106,6 +106,7 @@ void ProcessIO(void)
 void ServiceRequests(void)
 {
     byte index;
+    byte aux;
     
     if(USBGenRead((byte*)&dataPacket,sizeof(dataPacket)))
     {
@@ -125,9 +126,15 @@ void ServiceRequests(void)
 				break;
 			case 0x07:
 				for(counter=0;counter<45;counter++){
-					dataPacket._byte[3+counter] = ReadSpihd(dataPacket._byte[1]);
+					aux = ReadSpihd(0x0b);
+					if(!(aux & 0x80)){
+						counter--;
+					}else{
+						dataPacket._byte[3+counter] = aux;
+					}
 				}
-				counter = 0x30;
+				dataPacket._byte[3+45] = 'r';
+				counter = 0x31;
 				break;
 			//original:
             case READ_VERSION:
