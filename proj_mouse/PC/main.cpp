@@ -1,5 +1,6 @@
 #include <iostream>
 
+
 using namespace std;
 /*********************************************************************
  *
@@ -82,7 +83,7 @@ int main(int argc, char* argv[])
 
     int d;
     UINT8 i,j,k;
-    INT8 buffer[64];
+    char buffer[64];
     INT8 cor;
     HDC hdcScreen;
     HDC MemDCExercising;
@@ -161,11 +162,14 @@ int main(int argc, char* argv[])
                 }
                 break;
             case 7:
-                d = 10;
+while(1)
+{
+                WriteToAddress(0x0b,0x00);  // write any value to reset (start reading from pixel 0)
+                d = 20;
                 cor = 0;
                 hdcScreen = GetDC( NULL );
                 MemDCExercising = CreateCompatibleDC(hdcScreen);
-                bm = CreateCompatibleBitmap( hdcScreen, 15*d,15*d);
+                bm = CreateCompatibleBitmap(hdcScreen, 15*d,15*d);
                 /*for(i=0;i<15;i++){
                     for(j=0;j<15;j++){
                         cor = (UINT8) ReadAddress(0x0b);
@@ -178,27 +182,37 @@ int main(int argc, char* argv[])
                         Rectangle(MemDCExercising, i*d,j*d,(i+1)*d,(j+1)*d);
                     }
                 }*/
-                for(i=0;i<5;i++){
+                //for(i=4;i>=0;i--)
+                for(i=0;i<5;i++)
+                {
                 	ReadAddress45(0x0b,buffer);
-                	for(j=0;j<3;j++){
-                		for(k=0;k<15;k++){
-                			cor = buffer[j*15+k];
+                	//for(j=2;j>=0;j--)
+                	for(j=0;j<3;j++)
+                    {
+                		//for(k=14;k>=0;k--)
+                		for(k=0;k<15;k++)
+                		{
+                			cor = buffer[(j*15+k)];
                 			cor = cor & 0x7f;
-				        SelectObject(MemDCExercising, bm);
-				        hBrush = CreateSolidBrush(RGB(cor,cor,cor));
-				        SelectObject(MemDCExercising, hBrush);
-				        hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
-				        SelectObject(MemDCExercising, hPen);
-                			Rectangle(MemDCExercising, (i*3+j)*d,(14-k)*d,((i*3+j)+1)*d,(15-k)*d);
+                            SelectObject(MemDCExercising, bm);
+                            hBrush = CreateSolidBrush(RGB(cor,cor,cor));
+                            SelectObject(MemDCExercising, hBrush);
+                            hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
+                            SelectObject(MemDCExercising, hPen);
+                            //Rectangle(MemDCExercising, (i*3+j)*d,(14-k)*d,((i*3+j)+1)*d,(15-k)*d);
+                            //Rectangle(MemDCExercising, (j+3*i)*d, (k)*d, (j+3*i+1)*d, (k+1)*d);
+                            if(Rectangle(MemDCExercising, (15-(j+3*i))*d, (15-k)*d, (15-(j+3*i+1))*d, (15-(k+1))*d)==0)
+                                puts("Ouch");
+                            DeleteObject(hBrush);
+                            DeleteObject(hPen);
                 		}
                 	}
                 }
-                BitBlt(hdcScreen, 0, 0, 15*d,
-                15*d, MemDCExercising, 0, 0, SRCCOPY);
-                DeleteObject(hBrush);
-                DeleteObject(hPen);
+                BitBlt(hdcScreen, 10, 10, 15*d, 15*d, MemDCExercising, 0, 0, SRCCOPY);
                 DeleteObject(bm);
                 DeleteDC(MemDCExercising);
+}
+                break;
             default:
                 break;
         }// end switch
@@ -434,7 +448,10 @@ void WriteToAddress(char address,char data)
         if(RecvLength == 5 && receive_buf[0] == 4 &&
             receive_buf[3] == 0x01)
         {
-            if(receive_buf[4]==1) printf("Write success.\r\n");
+            if(receive_buf[4]==1)
+            {
+                /*printf("Write success.\r\n");*/
+            }
             else printf("Write failure.\r\n");
         }
     }
@@ -483,7 +500,7 @@ void ReadAddress45(char address,char* cenas)
         //{
             //printf("Value %x read from address %x\r\n",receive_buf[3],receive_buf[1]);
         //}
-        strncpy(cenas,&receive_buf[3],45);
+        strncpy(cenas,(char*)&receive_buf[3],45);
     }
     else
         printf("USB Operation Failed\r\n");
