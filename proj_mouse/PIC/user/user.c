@@ -124,6 +124,11 @@ void ServiceRequests(void)
 				dataPacket._byte[4]=0x01;
 				counter = 0x05;
 				break;
+			case 0x05:
+				dataPacket._byte[2] = ReadSpihd(0x03);
+				dataPacket._byte[3] = ReadSpihd(0x04);
+				counter = 0x04;
+				break;
 			case 0x07:
 				for(counter=0;counter<45;counter++){
 					aux = ReadSpihd(0x0b);

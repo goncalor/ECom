@@ -67,6 +67,7 @@ void GetDataFromPIC(void);
 char ReadAddress(char address);
 void WriteToAddress(char address,char data);
 void ReadAddress45(char address,char* cenas);
+void ReadDeltas(char * deltas);
 DWORD SendReceivePacket(BYTE *SendData, DWORD SendLength, BYTE *ReceiveData,
                     DWORD *ReceiveLength, UINT SendDelay, UINT ReceiveDelay);
 void CheckInvalidHandle(void);
@@ -147,8 +148,9 @@ int main(int argc, char* argv[])
                 break;
             case 6:
                 while(1){
-                    deltax = (INT8) ReadAddress(0x03);
-                    deltay = (INT8) ReadAddress(0x04);
+                    ReadDeltas(buffer);
+                    deltax = buffer[0];
+                    deltay = buffer[1];
 
                     if(GetCursorPos(&point)){
                         if(!SetCursorPos(point.x - deltax,point.y + deltay)){
@@ -528,7 +530,47 @@ void ReadAddress45(char address,char* cenas)
 
     return;
 }
+void ReadDeltas(char * deltas)
+{
+    // First we need to open data pipes...
+    DWORD selection;
+    selection = 0; // Assumes only one board is connected to PC through USB and it has index 0
+    fflush(stdin);
 
+    myOutPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_WRITE,0);
+    myInPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_READ,0);
+    if(myOutPipe == INVALID_HANDLE_VALUE || myInPipe == INVALID_HANDLE_VALUE)
+    {
+        printf("Failed to open data pipes.\r\n");
+        return;
+    }//end if
+
+
+    // Read command: 3
+    // Request format: <Read Command><Address><Expected Reply Length>
+    // Reply format: <Read Command><Address><Expected Reply Length><Address content>
+
+    BYTE send_buf[64],receive_buf[64];
+    DWORD RecvLength=4;
+
+    send_buf[0] = 5;      // Command
+    send_buf[1] = 0x02;              // Expected length of the result
+    deltas[0] = 0;
+    deltas[1] = 0;
+    if(SendReceivePacket(send_buf,2,receive_buf,&RecvLength,1000,1000) == 1)
+    {
+        deltas[0] = receive_buf[2];
+        deltas[1] = receive_buf[3];
+    }
+    else
+        printf("USB Operation Failed\r\n");
+
+    // Let's close the data pipes since we have nothing left to do..
+    MPUSBClose(myOutPipe);
+    MPUSBClose(myInPipe);
+    myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
+    return;
+}
 
 //---------------------------------------------------------------------------
 
