@@ -141,6 +141,19 @@ void ServiceRequests(void)
 				dataPacket._byte[3+45] = 'r';
 				counter = 0x31;
 				break;
+			case 0x08:
+				for(counter=0;counter<45;counter++){
+					aux = ReadSpihd(0x0b);
+					if(!(aux & 0x80)){
+						counter--;
+					}else{
+						dataPacket._byte[2+counter] = aux;
+					}
+				}
+				dataPacket._byte[2+45] = ReadSpihd(0x03);
+				dataPacket._byte[2+46] = ReadSpihd(0x04);
+				counter = 0x31;
+				break;
 			//original:
             case READ_VERSION:
                 //dataPacket._byte[1] is len

@@ -1,6 +1,5 @@
 #include <iostream>
 
-
 using namespace std;
 /*********************************************************************
  *
@@ -66,8 +65,9 @@ void LoadDLL(void);
 void GetDataFromPIC(void);
 char ReadAddress(char address);
 void WriteToAddress(char address,char data);
-void ReadAddress45(char address,char* cenas);
+void ReadAddress45(char* cenas);
 void ReadDeltas(char * deltas);
+void ReadAddress47(char* cenas);
 DWORD SendReceivePacket(BYTE *SendData, DWORD SendLength, BYTE *ReceiveData,
                     DWORD *ReceiveLength, UINT SendDelay, UINT ReceiveDelay);
 void CheckInvalidHandle(void);
@@ -102,57 +102,44 @@ int main(int argc, char* argv[])
     printf("===============================\r\n");
     while(!bQuit)
     {
-        printf("Select an option\r\n");/*
-        printf("[1] Get this application version\r\n");
-        */printf("[0] List boards present\r\n");/*
-        printf("[3] Asks the PIC for the status of the switches S2 and S3\r\n");
-        */
+        printf("Select an option\r\n");
+        printf("[0] List boards present\r\n");
         printf("[1] Read from address 0x00\r\n");
         printf("[2] Write to address 0x0d\r\n");
         printf("[3] Read from address 0x0d\r\n");
         printf("[4] Read from addresses 0x03 e 0x04\r\n");
-        printf("[5] Quit\r\n");
-        printf("[6] Begin Mouse Operation\r\n");
-        printf("[7] Camera thingy\r\n>>");
+        printf("[5] Normal mouse operation\r\n");
+        printf("[6] Show mouse camera capture\r\n");
+        printf("[7] Enable mouse operation + Show mouse camera\r\n");
+        printf("[8] Quit\r\n");
+        printf(">>");
         scanf("%d",&selection);
 
         switch(selection)
-        {/*
-            case 1:
-                temp = MPUSBGetDLLVersion();
-                printf("MPUSBAPI Version: %d.%d\r\n",HIWORD(temp),LOWORD(temp));
-                break;*/
+        {
             case 0:
                 GetSummary();
-                break;/*
-            case 3:
-                GetDataFromPIC();
                 break;
-
-        */
             case 1:
-                ReadAddress(0x00);
+                printf("%d\r\n",ReadAddress(0x00));
                 break;
             case 2:
                 WriteToAddress(0x0d,0x01);
                 break;
             case 3:
-                ReadAddress(0x0d);
+                printf("%d\r\n",ReadAddress(0x0d));
                 break;
             case 4:
-                ReadAddress(0x03);
-                ReadAddress(0x04);
+                printf("%d\r\n",ReadAddress(0x03));
+                printf("%d\r\n",ReadAddress(0x04));
                 break;
             case 5:
-                bQuit = true;
-                break;
-            case 6:
-                while(1){
+                while(1){ // polls the PIC for the movements detected by the mouse
                     ReadDeltas(buffer);
                     deltax = buffer[0];
                     deltay = buffer[1];
 
-                    if(GetCursorPos(&point)){
+                    if(GetCursorPos(&point)){ // update the cursor location with the new data from the PIC
                         if(!SetCursorPos(point.x - deltax,point.y + deltay)){
                             puts("Erro: Escrita da posicao do rato");
                             break;
@@ -163,57 +150,89 @@ int main(int argc, char* argv[])
                     }
                 }
                 break;
-            case 7:
-while(1)
-{
-                WriteToAddress(0x0b,0x00);  // write any value to reset (start reading from pixel 0)
-                d = 20;
-                cor = 0;
-                hdcScreen = GetDC( NULL );
-                MemDCExercising = CreateCompatibleDC(hdcScreen);
-                bm = CreateCompatibleBitmap(hdcScreen, 15*d,15*d);
-                /*for(i=0;i<15;i++){
-                    for(j=0;j<15;j++){
-                        cor = (UINT8) ReadAddress(0x0b);
-                        cor = cor & 0x7f;
-                        SelectObject(MemDCExercising, bm);
-                        hBrush = CreateSolidBrush(RGB(cor,cor,cor));
-                        SelectObject(MemDCExercising, hBrush);
-                        hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
-                        SelectObject(MemDCExercising, hPen);
-                        Rectangle(MemDCExercising, i*d,j*d,(i+1)*d,(j+1)*d);
-                    }
-                }*/
-                //for(i=4;i>=0;i--)
-                for(i=0;i<5;i++)
+            case 6:
+                while(1) // polls the PIC for the image captured by the mouse
                 {
-                	ReadAddress45(0x0b,buffer);
-                	//for(j=2;j>=0;j--)
-                	for(j=0;j<3;j++)
+                    WriteToAddress(0x0b,0x00); // writing to this register sets the sensor's pixel grabber to pixel 0
+                    d = 20;
+                    cor = 0;
+                    hdcScreen = GetDC( NULL );
+                    MemDCExercising = CreateCompatibleDC(hdcScreen);
+                    bm = CreateCompatibleBitmap(hdcScreen, 15*d,15*d);
+                    for(i=0;i<5;i++) // prints the image on the corner of the screen pixel by pixel
                     {
-                		//for(k=14;k>=0;k--)
-                		for(k=0;k<15;k++)
-                		{
-                			cor = buffer[(j*15+k)];
-                			cor = cor & 0x7f;
-                            SelectObject(MemDCExercising, bm);
-                            hBrush = CreateSolidBrush(RGB(cor,cor,cor));
-                            SelectObject(MemDCExercising, hBrush);
-                            hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
-                            SelectObject(MemDCExercising, hPen);
-                            //Rectangle(MemDCExercising, (i*3+j)*d,(14-k)*d,((i*3+j)+1)*d,(15-k)*d);
-                            //Rectangle(MemDCExercising, (j+3*i)*d, (k)*d, (j+3*i+1)*d, (k+1)*d);
-                            if(Rectangle(MemDCExercising, ((j+3*i))*d, (k)*d, ((j+3*i+1))*d, ((k+1))*d)==0)
-                                puts("Rectangle() error.");
-                            DeleteObject(hBrush);
-                            DeleteObject(hPen);
-                		}
-                	}
+                        ReadAddress45(buffer);
+                        for(j=0;j<3;j++)
+                        {
+                            for(k=0;k<15;k++)
+                            {
+                                cor = buffer[(j*15+k)];
+                                cor = cor << 1;
+                                SelectObject(MemDCExercising, bm);
+                                hBrush = CreateSolidBrush(RGB(cor,cor,cor));
+                                SelectObject(MemDCExercising, hBrush);
+                                hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
+                                SelectObject(MemDCExercising, hPen);
+                                if(Rectangle(MemDCExercising, (j+3*i)*d, k*d, (j+3*i+1)*d, (k+1)*d)==0)
+                                    puts("Rectangle() error.");
+                                DeleteObject(hBrush);
+                                DeleteObject(hPen);
+                            }
+                        }
+                    }
+                    BitBlt(hdcScreen, 10, 10, 15*d, 15*d, MemDCExercising, 0, 0, SRCCOPY);
+                    DeleteObject(bm);
+                    DeleteDC(MemDCExercising);
                 }
-                BitBlt(hdcScreen, 10, 10, 15*d, 15*d, MemDCExercising, 0, 0, SRCCOPY);
-                DeleteObject(bm);
-                DeleteDC(MemDCExercising);
-}
+                break;
+            case 7:
+                while(1){
+                    WriteToAddress(0x0b,0x00);  // writing to this register sets the sensor's pixel grabber to pixel 0
+                    d = 20;
+                    cor = 0;
+                    hdcScreen = GetDC( NULL );
+                    MemDCExercising = CreateCompatibleDC(hdcScreen);
+                    bm = CreateCompatibleBitmap(hdcScreen, 15*d,15*d);
+                    for(i=0;i<5;i++)
+                    {
+                        ReadAddress47(buffer);
+
+                        deltax = buffer[45];
+                        deltay = buffer[46];
+
+                        if(GetCursorPos(&point)){
+                            if(!SetCursorPos(point.x - deltax,point.y + deltay)){
+                                puts("Erro: Escrita da posicao do rato");
+                                break;
+                            }
+                        }else{
+                            puts("Erro: Leitura da posicao do rato");
+                            break;
+                        }
+                        for(j=0;j<3;j++)
+                        {
+                            for(k=0;k<15;k++)
+                            {
+                                cor = buffer[(j*15+k)];
+                                cor = cor << 1;
+                                SelectObject(MemDCExercising, bm);
+                                hBrush = CreateSolidBrush(RGB(cor,cor,cor));
+                                SelectObject(MemDCExercising, hBrush);
+                                hPen = CreatePen(PS_SOLID ,1,RGB(cor,cor,cor));
+                                SelectObject(MemDCExercising, hPen);
+                                if(Rectangle(MemDCExercising, ((j+3*i))*d, (k)*d, ((j+3*i+1))*d, ((k+1))*d)==0)
+                                    puts("Rectangle() error.");
+                                DeleteObject(hBrush);
+                                DeleteObject(hPen);
+                            }
+                        }
+                    }
+                    BitBlt(hdcScreen, 30, 30, 15*d, 15*d, MemDCExercising, 0, 0, SRCCOPY);
+                    DeleteObject(bm);
+                    DeleteDC(MemDCExercising);
+                }
+            case 8:
+                bQuit = true;
                 break;
             default:
                 break;
@@ -401,15 +420,7 @@ char ReadAddress(char address)
     send_buf[1] = (BYTE) address;
     send_buf[2] = 0x01;              // Expected length of the result
 
-    if(SendReceivePacket(send_buf,3,receive_buf,&RecvLength,1000,1000) == 1)
-    {
-        /*if(*/RecvLength == 4 && receive_buf[0] == 3 &&
-            receive_buf[2] == 0x01/*)*/;
-        //{
-            //printf("Value %x read from address %x\r\n",receive_buf[3],receive_buf[1]);
-        //}
-    }
-    else
+    if(SendReceivePacket(send_buf,3,receive_buf,&RecvLength,1000,1000) != 1)
         printf("USB Operation Failed\r\n");
 
     // Let's close the data pipes since we have nothing left to do..
@@ -450,11 +461,8 @@ void WriteToAddress(char address,char data)
         if(RecvLength == 5 && receive_buf[0] == 4 &&
             receive_buf[3] == 0x01)
         {
-            if(receive_buf[4]==1)
-            {
-                /*printf("Write success.\r\n");*/
-            }
-            else printf("Write failure.\r\n");
+            if(receive_buf[4]!=1)
+                printf("Write failure.\r\n");
         }
     }
     else
@@ -468,7 +476,7 @@ void WriteToAddress(char address,char data)
 }
 
 
-void ReadAddress45(char address,char* cenas)
+void ReadAddress45(char* cenas)
 {
     // First we need to open data pipes...
     DWORD selection;
@@ -493,30 +501,13 @@ void ReadAddress45(char address,char* cenas)
     UINT16 i;
 
     send_buf[0] = 7;      // Command
-    send_buf[1] = (BYTE) address;
+    send_buf[1] = 0;
     send_buf[2] = 46;              // Expected length of the result
 
     if(SendReceivePacket(send_buf,3,receive_buf,&RecvLength,1000,1000) == 1)
     {
-        /*if(RecvLength == 4 && receive_buf[0] == 3 &&
-            receive_buf[2] == 0x01)*/;
-        //{
-            //printf("Value %x read from address %x\r\n",receive_buf[3],receive_buf[1]);
-        //}
-        /*if(receive_buf[3+45]=='r'){
-            printf("A mensagem secreta chegou\r\n");
-        }else{
-            printf("A mensagem secreta NAO chegou\r\n");
-        }*/
         for(i=0;i<45;i++){
-            cenas[i] = receive_buf[3+i];/*
-            if(i!=0){
-                if(receive_buf[i]==receive_buf[i-1]){
-                    printf("O problema é do PIC\r\n");
-                }else{
-                    printf("ILIBEM O PIC, É INOCENTE\r\n");
-                }
-            }*/
+            cenas[i] = receive_buf[3+i];
         }
     }
     else
@@ -571,7 +562,50 @@ void ReadDeltas(char * deltas)
     myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
     return;
 }
+void ReadAddress47(char* cenas)
+{
+    // First we need to open data pipes...
+    DWORD selection;
+    selection = 0; // Assumes only one board is connected to PC through USB and it has index 0
+    fflush(stdin);
 
+    myOutPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_WRITE,0);
+    myInPipe = MPUSBOpen(selection,vid_pid,out_pipe,MP_READ,0);
+    if(myOutPipe == INVALID_HANDLE_VALUE || myInPipe == INVALID_HANDLE_VALUE)
+    {
+        printf("Failed to open data pipes.\r\n");
+        return;
+    }//end if
+
+
+    // Read command: 3
+    // Request format: <Read Command><Address><Expected Reply Length>
+    // Reply format: <Read Command><Address><Expected Reply Length><Address content>
+
+    BYTE send_buf[64],receive_buf[64];
+    DWORD RecvLength=49;
+    UINT16 i;
+
+    send_buf[0] = 8;      // Command
+    send_buf[1] = 47;             // Expected length of the result
+
+    if(SendReceivePacket(send_buf,2,receive_buf,&RecvLength,1000,1000) == 1)
+    {
+        for(i=0;i<47;i++){
+            cenas[i] = receive_buf[2+i];
+        }
+    }
+    else
+        printf("USB Operation Failed\r\n");
+
+    // Let's close the data pipes since we have nothing left to do..
+    MPUSBClose(myOutPipe);
+    MPUSBClose(myInPipe);
+    myOutPipe = myInPipe = INVALID_HANDLE_VALUE;
+
+
+    return;
+}
 //---------------------------------------------------------------------------
 
 /////////////////////////////////////////////////////////////////////////////
