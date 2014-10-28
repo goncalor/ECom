@@ -11,6 +11,7 @@
 \usepackage[hypcap]{caption} % makes \ref point to top of figures and tables
 \usepackage{amsmath}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{rotating}
 
 \begin{document}
 
@@ -67,7 +68,7 @@ Formato dos pacotes de dados:
 \label{pack_pic_pc_1}
 \end{figure}
 
-No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava'' pelo ecrã.
+No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava'' pelo ecrã. Isto levou-nos a tentar reduzir o número de comunicações via USB.
 
 \pagebreak
 
@@ -113,5 +114,83 @@ Formato dos pacotes de dados:
 \end{figure}
 
 \subsection{Display}
+\subsubsection{1ª Iteração}
+Para cada um dos 225 pixeis, a filosofia implementada era:
+\begin{enumerate}
+    \item PC $\rightarrow$ PIC: um pedido de leitura do registo \texttt{0x0b} via USB
+    \item PIC $\rightarrow$ Sensor: o endereço do registo \texttt{0x0b} via SPI Half-duplex
+    \item Sensor $\rightarrow$ PIC: o valor contido no registo via SPI Half-duplex
+    \item PIC $\rightarrow$ PC: uma mensagem com o valor lido do registo
+    \item PC: Mapeamento dos dados recebidos para um rectângulo no ecrã.
+\end{enumerate}
+
+Esta abordagem permitia-nos mostrar uma imagem a cada 15 segundos, isto é, muito longe da solução em tempo-real pretendida.
+
+\subsubsection{2ª Iteração}
+De maneira a diminuir o número de comunicações USB por cada imagem, a solução mais evidente é incluir mais que um pixel por cada intercâmbio de comunicações.
+
+Uma vez que os pacotes já implementados no código fornecido estão limitados a 64 bytes, adaptámo-los de maneira a cada pacote PIC $\rightarrow$ PC conter os dados de 45 pixeis, isto é, 3 colunas da imagem.
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{0,5mm}
+\begin{picture}(150,150)
+\multiput(0,0)(10,0){16}{\line(0,1){150}}
+\multiput(0,0)(0,10){16}{\line(1,0){150}}
+\multiput(2,2)(30,0){5}{\color{red} \line(0,1){146}}
+\multiput(2,2)(30,0){5}{\color{red} \line(1,0){26}}
+\multiput(28,2)(30,0){5}{\color{red} \line(0,1){146}}
+\multiput(2,148)(30,0){5}{\color{red} \line(1,0){26}}
+\put(0,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 1}}}
+\put(30,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 2}}}
+\put(60,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 3}}}
+\put(90,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 4}}}
+\put(120,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 5}}}
+\end{picture}
+\caption{Divisão da imagem em troços}
+\label{picture_layout}
+\end{figure}
+
+Ao fazer esta alteração, notámos que havia conjuntos verticais de pixeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verificava na versão anterior.
+
+Ao eliminar as sucessivas comunicações entre PC e PIC, deixámos de dar tempo ao circuito do sensor para capturar um pixel válido. Uma vez que não verificávamos a validade do pixel, este repetia-se até obtermos um novo pixel válido.
+
+Bastou-nos adaptar o código do micro-controlador para fazer uma verificação do bit de validade para que a imagem aparecesse correctamente.
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(120,10)
+\multiput(0,0)(120,0){2}{\line(0,1){10}}
+\multiput(0,0)(0,10){2}{\line(1,0){120}}
+\put(20,0){\line(0,1){10}}
+\put(0,5){\makebox(20,5){\scriptsize\texttt{Bytes 0-1:}}}
+\put(0,0){\makebox(20,5){\tiny\texttt{Original Message}}}
+\put(20,0){\makebox(100,10){\texttt{Bytes 2-46: Bytes de Pixeis}}}
+\end{picture}
+\caption{Pacote PIC $\rightarrow$ PC}
+\label{pack_pic_pc_3}
+\end{figure}
+
+\subsection{Cursor e Display \emph{simultâneos}}
+
+Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, foram feitas alterações ao formato do pacote de dados de maneira a incluir os valores de $\Delta x$ e $\Delta y$ para além dos 45 pixeis da imagem a mostrar.
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(120,10)
+\multiput(0,0)(120,0){2}{\line(0,1){10}}
+\multiput(0,0)(0,10){2}{\line(1,0){120}}
+\multiput(20,0)(80,0){2}{\line(0,1){10}}
+\put(0,5){\makebox(20,5){\scriptsize\texttt{Bytes 0-1:}}}
+\put(0,0){\makebox(20,5){\tiny\texttt{Original Message}}}
+\put(20,0){\makebox(80,10){\texttt{Bytes 2-46: Bytes de Pixeis}}}
+\put(100,5){\makebox(20,5){\scriptsize\texttt{Bytes 47-48:}}}
+\put(100,0){\makebox(20,5){\scriptsize$\Delta x$\texttt{ and }$\Delta y$}}
+\end{picture}
+\caption{Pacote PIC $\rightarrow$ PC}
+\label{pack_pic_pc_4}
+\end{figure}
 
 \end{document}
