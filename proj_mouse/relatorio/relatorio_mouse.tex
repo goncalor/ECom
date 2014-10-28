@@ -19,4 +19,99 @@
 \tableofcontents
 \pagebreak
 
+\section{Estratégias}
+Durante o laboratório, efectuámos alterações iterativas ao código que nos foi fornecido de maneira a implementar as funcionalidades pretendidas.
+
+\subsection{Rato}
+
+\subsubsection{1ª Iteração}
+\begin{enumerate}
+    \item PC $\rightarrow$ PIC: um pedido de leitura do registo 3 ($\Delta x$) via USB
+    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
+    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x03} via SPI Half-duplex
+    \item PIC $\rightarrow$ PC: o valor lido do sensor, que corresponde a $\Delta x$, via USB
+    \item PC $\rightarrow$ PIC: um pedido de leitura do registo 4 ($\Delta y$) via USB
+    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x04}) a ser lido via SPI Half-duplex
+    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x04} via SPI Half-duplex
+    \item PIC $\rightarrow$ PC: o valor lido do sensor, que corresponde a $\Delta y$, via USB
+    \item PC: As variações nas posições são adicionadas às coordenadas actuais do rato.
+\end{enumerate}
+
+Formato dos pacotes de dados:
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(120,10)
+\multiput(0,0)(40,0){4}{\line(0,1){10}}
+\multiput(0,0)(0,10){2}{\line(1,0){120}}
+\put(0,0){\makebox(40,10){\texttt{Byte 0: Read Command}}}
+\put(40,0){\makebox(40,10){\texttt{Byte 1: Read Address}}}
+\put(80,0){\makebox(40,10){\texttt{Byte 2: Reply Length}}}
+\end{picture}
+\caption{Pacote PC $\rightarrow$ PIC}
+\label{pack_pc_pic_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(120,10)
+\put(0,0){\line(0,1){10}}
+\multiput(90,0)(30,0){2}{\line(0,1){10}}
+\multiput(0,0)(0,10){2}{\line(1,0){120}}
+\put(0,0){\makebox(90,10){\texttt{Bytes 0-2: Original Message}}}
+\put(90,0){\makebox(30,10){\texttt{Byte 3: Reply}}}
+\end{picture}
+\caption{Pacote PIC $\rightarrow$ PC}
+\label{pack_pic_pc_1}
+\end{figure}
+
+No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava'' pelo ecrã.
+
+\pagebreak
+
+\subsubsection{2ª Iteração}
+\begin{enumerate}
+    \item PC $\rightarrow$ PIC: um pedido de leitura dos registo 3 e 4($\Delta x$ e $\Delta y$) via USB
+    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
+    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x03} via SPI Half-duplex
+    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x04}) a ser lido via SPI Half-duplex
+    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x04} via SPI Half-duplex
+    \item PIC $\rightarrow$ PC: os valores lidos do sensor, que correspondem a $\Delta x$ e $\Delta y$, via USB
+    \item PC: As variações nas posições são adicionadas às coordenadas actuais do rato.
+\end{enumerate}
+
+Formato dos pacotes de dados:
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(120,10)
+\multiput(0,0)(60,0){3}{\line(0,1){10}}
+\multiput(0,0)(0,10){2}{\line(1,0){120}}
+\put(0,0){\makebox(60,10){\texttt{Byte 0: Custom Read Command}}}
+\put(60,0){\makebox(60,10){\texttt{Byte 1: Reply Length}}}
+\end{picture}
+\caption{Pacote PC $\rightarrow$ PIC}
+\label{pack_pc_pic_2}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\setlength{\unitlength}{1mm}
+\begin{picture}(120,10)
+\put(0,0){\line(0,1){10}}
+\multiput(60,0)(30,0){3}{\line(0,1){10}}
+\multiput(0,0)(0,10){2}{\line(1,0){120}}
+\put(0,0){\makebox(60,10){\texttt{Bytes 0-1: Original Message}}}
+\put(60,0){\makebox(30,10){\texttt{Byte 2:} $\Delta x$}}
+\put(90,0){\makebox(30,10){\texttt{Byte 3:} $\Delta y$}}
+\end{picture}
+\caption{Pacote PIC $\rightarrow$ PC}
+\label{pack_pic_pc_2}
+\end{figure}
+
+\subsection{Display}
+
 \end{document}
