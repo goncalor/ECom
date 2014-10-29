@@ -46,9 +46,11 @@ Formato dos pacotes de dados:
 \begin{picture}(120,10)
 \multiput(0,0)(40,0){4}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(40,10){\texttt{Byte 0: Read Command}}}
-\put(40,0){\makebox(40,10){\texttt{Byte 1: Read Address}}}
-\put(80,0){\makebox(40,10){\texttt{Byte 2: Reply Length}}}
+\put(0,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 0: Comando de Leitura}}}}
+
+\put(40,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 1: Endereço a Ler}}}}
+
+\put(80,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 2: Comprimento da Resposta}}}}
 \end{picture}
 \caption{Pacote PC $\rightarrow$ PIC}
 \label{pack_pc_pic_1}
@@ -61,8 +63,8 @@ Formato dos pacotes de dados:
 \put(0,0){\line(0,1){10}}
 \multiput(90,0)(30,0){2}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(90,10){\texttt{Bytes 0-2: Original Message}}}
-\put(90,0){\makebox(30,10){\texttt{Byte 3: Reply}}}
+\put(0,0){\makebox(90,10){\texttt{Bytes 0-2: Mensagem Original}}}
+\put(90,0){\makebox(30,9){\parbox{3cm}{\centering\texttt{Byte 3: Resposta}}}}
 \end{picture}
 \caption{Pacote PIC $\rightarrow$ PC}
 \label{pack_pic_pc_1}
@@ -91,8 +93,8 @@ Formato dos pacotes de dados:
 \begin{picture}(120,10)
 \multiput(0,0)(60,0){3}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(60,10){\texttt{Byte 0: Custom Read Command}}}
-\put(60,0){\makebox(60,10){\texttt{Byte 1: Reply Length}}}
+\put(0,0){\makebox(60,10){\parbox{4cm}{\centering\texttt{Byte 0: Comando de Leitura Personalizado}}}}
+\put(60,0){\makebox(60,9){\parbox{4cm}{\centering\texttt{Byte 1: Comprimento da Resposta}}}}
 \end{picture}
 \caption{Pacote PC $\rightarrow$ PIC}
 \label{pack_pc_pic_2}
@@ -105,7 +107,7 @@ Formato dos pacotes de dados:
 \put(0,0){\line(0,1){10}}
 \multiput(60,0)(30,0){3}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(60,10){\texttt{Bytes 0-1: Original Message}}}
+\put(0,0){\makebox(60,10){\parbox{6cm}{\centering\texttt{Bytes 0-1: Mensagem Original}}}}
 \put(60,0){\makebox(30,10){\texttt{Byte 2:} $\Delta x$}}
 \put(90,0){\makebox(30,10){\texttt{Byte 3:} $\Delta y$}}
 \end{picture}
@@ -115,7 +117,7 @@ Formato dos pacotes de dados:
 
 \subsection{Display}
 \subsubsection{1ª Iteração}
-Para cada um dos 225 pixeis, a filosofia implementada era:
+Para cada um dos 225 píxeis, a filosofia implementada foi:
 \begin{enumerate}
     \item PC $\rightarrow$ PIC: um pedido de leitura do registo \texttt{0x0b} via USB
     \item PIC $\rightarrow$ Sensor: o endereço do registo \texttt{0x0b} via SPI Half-duplex
@@ -124,12 +126,12 @@ Para cada um dos 225 pixeis, a filosofia implementada era:
     \item PC: Mapeamento dos dados recebidos para um rectângulo no ecrã.
 \end{enumerate}
 
-Esta abordagem permitia-nos mostrar uma imagem a cada 15 segundos, isto é, muito longe da solução em tempo-real pretendida.
+Esta abordagem permite-nos mostrar uma imagem a aproximadamente cada 15 segundos, isto é, muito longe da solução em tempo-real pretendida.
 
 \subsubsection{2ª Iteração}
-De maneira a diminuir o número de comunicações USB por cada imagem, a solução mais evidente é incluir mais que um pixel por cada intercâmbio de comunicações.
+De maneira a diminuir o número de comunicações USB por cada imagem, a solução mais evidente é incluir mais que um píxel por cada intercâmbio de comunicações.
 
-Uma vez que os pacotes já implementados no código fornecido estão limitados a 64 bytes, adaptámo-los de maneira a cada pacote PIC $\rightarrow$ PC conter os dados de 45 pixeis, isto é, 3 colunas da imagem.
+Uma vez que os pacotes já implementados no código fornecido estão limitados a 64 bytes, adaptámo-los de maneira a cada pacote PIC $\rightarrow$ PC conter os dados de 45 píxeis, isto é, 3 colunas da imagem.
 
 \begin{figure}[H]
 \centering
@@ -141,19 +143,19 @@ Uma vez que os pacotes já implementados no código fornecido estão limitados a
 \multiput(2,2)(30,0){5}{\color{red} \line(1,0){26}}
 \multiput(28,2)(30,0){5}{\color{red} \line(0,1){146}}
 \multiput(2,148)(30,0){5}{\color{red} \line(1,0){26}}
-\put(0,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 1}}}
-\put(30,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 2}}}
+\put(0,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 5}}}
+\put(30,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 4}}}
 \put(60,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 3}}}
-\put(90,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 4}}}
-\put(120,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 5}}}
+\put(90,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 2}}}
+\put(120,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 1}}}
 \end{picture}
 \caption{Divisão da imagem em troços}
 \label{picture_layout}
 \end{figure}
 
-Ao fazer esta alteração, notámos que havia conjuntos verticais de pixeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verificava na versão anterior.
+Ao fazer esta alteração, notámos que havia conjuntos verticais de píxeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verificava na versão anterior.
 
-Ao eliminar as sucessivas comunicações entre PC e PIC, deixámos de dar tempo ao circuito do sensor para capturar um pixel válido. Uma vez que não verificávamos a validade do pixel, este repetia-se até obtermos um novo pixel válido.
+Ao eliminar as sucessivas comunicações entre PC e PIC, deixámos de dar tempo ao circuito do sensor para capturar um píxel válido. Uma vez que não verificávamos a validade do píxel, este repetia-se até obtermos um novo píxel válido.
 
 Bastou-nos adaptar o código do micro-controlador para fazer uma verificação do bit de validade para que a imagem aparecesse correctamente.
 
@@ -164,9 +166,8 @@ Bastou-nos adaptar o código do micro-controlador para fazer uma verificação d
 \multiput(0,0)(120,0){2}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
 \put(20,0){\line(0,1){10}}
-\put(0,5){\makebox(20,5){\scriptsize\texttt{Bytes 0-1:}}}
-\put(0,0){\makebox(20,5){\tiny\texttt{Original Message}}}
-\put(20,0){\makebox(100,10){\texttt{Bytes 2-46: Bytes de Pixeis}}}
+\put(0,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 0-1: Mensagem Original}}}}
+\put(20,0){\makebox(100,9){\texttt{Bytes 2-46: Bytes de píxeis}}}
 \end{picture}
 \caption{Pacote PIC $\rightarrow$ PC}
 \label{pack_pic_pc_3}
@@ -174,7 +175,7 @@ Bastou-nos adaptar o código do micro-controlador para fazer uma verificação d
 
 \subsection{Cursor e Display \emph{simultâneos}}
 
-Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, foram feitas alterações ao formato do pacote de dados de maneira a incluir os valores de $\Delta x$ e $\Delta y$ para além dos 45 pixeis da imagem a mostrar.
+Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, foram feitas alterações ao formato do pacote de dados de maneira a incluir os valores de $\Delta x$ e $\Delta y$ para além dos 45 píxeis da imagem a mostrar.
 
 \begin{figure}[H]
 \centering
@@ -183,11 +184,9 @@ Uma vez constatado que o processo mais demorado é a comunicação via USB, foi 
 \multiput(0,0)(120,0){2}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
 \multiput(20,0)(80,0){2}{\line(0,1){10}}
-\put(0,5){\makebox(20,5){\scriptsize\texttt{Bytes 0-1:}}}
-\put(0,0){\makebox(20,5){\tiny\texttt{Original Message}}}
-\put(20,0){\makebox(80,10){\texttt{Bytes 2-46: Bytes de Pixeis}}}
-\put(100,5){\makebox(20,5){\scriptsize\texttt{Bytes 47-48:}}}
-\put(100,0){\makebox(20,5){\scriptsize$\Delta x$\texttt{ and }$\Delta y$}}
+\put(0,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 0-1: Mensagem Original}}}}
+\put(20,0){\makebox(80,9){\texttt{Bytes 2-46: Bytes de píxeis}}}
+\put(100,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 47-48: $\Delta x$\texttt{ and }$\Delta y$}}}}
 \end{picture}
 \caption{Pacote PIC $\rightarrow$ PC}
 \label{pack_pic_pc_4}
