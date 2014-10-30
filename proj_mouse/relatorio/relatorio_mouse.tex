@@ -26,6 +26,7 @@ Durante o laboratório, efectuámos alterações iterativas ao código que nos f
 \subsection{Rato}
 
 \subsubsection{1ª Iteração}
+Processos de actualização da posição do cursor:
 \begin{enumerate}
     \item PC $\rightarrow$ PIC: um pedido de leitura do registo 3 ($\Delta x$) via USB
     \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
@@ -64,17 +65,18 @@ Formato dos pacotes de dados:
 \multiput(90,0)(30,0){2}{\line(0,1){10}}
 \multiput(0,0)(0,10){2}{\line(1,0){120}}
 \put(0,0){\makebox(90,10){\texttt{Bytes 0-2: Mensagem Original}}}
-\put(90,0){\makebox(30,9){\parbox{3cm}{\centering\texttt{Byte 3: Resposta}}}}
+\put(90,0){\makebox(30,9){\parbox{3cm}{\footnotesize\centering\texttt{Byte 3: Conteúdo do Registo}}}}
 \end{picture}
 \caption{Pacote PIC $\rightarrow$ PC}
 \label{pack_pic_pc_1}
 \end{figure}
 
-No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava'' pelo ecrã. Isto levou-nos a tentar reduzir o número de comunicações via USB.
+No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava'' pelo ecrã. Foi determinado que o processo que mais tempo gasta é a comunicação via USB, e, como tal, o código foi adaptado de maneira a diminuir estas comunicações.
 
 \pagebreak
 
 \subsubsection{2ª Iteração}
+Processos de actualização da posição do cursor:
 \begin{enumerate}
     \item PC $\rightarrow$ PIC: um pedido de leitura dos registo 3 e 4($\Delta x$ e $\Delta y$) via USB
     \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
@@ -115,9 +117,9 @@ Formato dos pacotes de dados:
 \label{pack_pic_pc_2}
 \end{figure}
 
-\subsection{Display}
+\subsection{Captura de Imagem}
 \subsubsection{1ª Iteração}
-Para cada um dos 225 píxeis, a filosofia implementada foi:
+Os processos correspondentes à leitura de cada um dos píxeis na implementação inicial são:
 \begin{enumerate}
     \item PC $\rightarrow$ PIC: um pedido de leitura do registo \texttt{0x0b} via USB
     \item PIC $\rightarrow$ Sensor: o endereço do registo \texttt{0x0b} via SPI Half-duplex
@@ -131,7 +133,7 @@ Esta abordagem permite-nos mostrar uma imagem a aproximadamente cada 15 segundos
 \subsubsection{2ª Iteração}
 De maneira a diminuir o número de comunicações USB por cada imagem, a solução mais evidente é incluir mais que um píxel por cada intercâmbio de comunicações.
 
-Uma vez que os pacotes já implementados no código fornecido estão limitados a 64 bytes, adaptámo-los de maneira a cada pacote PIC $\rightarrow$ PC conter os dados de 45 píxeis, isto é, 3 colunas da imagem.
+Uma vez que os pacotes já implementados no código fornecido estão limitados a 64 bytes, foram adaptados de maneira a cada pacote PIC $\rightarrow$ PC conter os dados de 45 píxeis, isto é, 3 colunas da imagem.
 
 \begin{figure}[H]
 \centering
@@ -153,11 +155,13 @@ Uma vez que os pacotes já implementados no código fornecido estão limitados a
 \label{picture_layout}
 \end{figure}
 
-Ao fazer esta alteração, notámos que havia conjuntos verticais de píxeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verificava na versão anterior.
+Ao fazer esta alteração, havia conjuntos verticais de píxeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verifica na versão anterior do programa.
 
-Ao eliminar as sucessivas comunicações entre PC e PIC, deixámos de dar tempo ao circuito do sensor para capturar um píxel válido. Uma vez que não verificávamos a validade do píxel, este repetia-se até obtermos um novo píxel válido.
+Ao eliminar as sucessivas comunicações entre PC e PIC, não há tempo para o circuito do sensor capturar um píxel válido. Uma vez que não era feita a verificação da validade do píxel, os valores eram repetidos, criando os padrões de píxeis em colunas.
 
-Bastou-nos adaptar o código do micro-controlador para fazer uma verificação do bit de validade para que a imagem aparecesse correctamente.
+\subsubsection{3ª Iteração}
+
+Bastou-nos adaptar o código do micro-controlador para fazer uma verificação do bit de validade antes de ler o píxel seguinte para que a imagem aparecesse correctamente.
 
 \begin{figure}[H]
 \centering
@@ -173,9 +177,9 @@ Bastou-nos adaptar o código do micro-controlador para fazer uma verificação d
 \label{pack_pic_pc_3}
 \end{figure}
 
-\subsection{Cursor e Display \emph{simultâneos}}
+\subsection{Cursor e Captura de Imagem Simultâneos}
 
-Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, foram feitas alterações ao formato do pacote de dados de maneira a incluir os valores de $\Delta x$ e $\Delta y$ para além dos 45 píxeis da imagem a mostrar.
+Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, o formato do pacote de dados foi alterado de maneira a incluir os valores de $\Delta x$ e $\Delta y$, para além dos 45 píxeis da imagem a mostrar.
 
 \begin{figure}[H]
 \centering
@@ -193,22 +197,22 @@ Uma vez constatado que o processo mais demorado é a comunicação via USB, foi 
 \end{figure}
 
 \pagebreak
-\section{Resultados}
+\section{Conclusões}
 
 Os resultados finais foram os esperados. O rato e a imagem são actualizados em simultâneo, sendo que a posição do rato é actulizada 5 vezes por cada actulização total da imagem.
 
-A área que da imagem que o rato permite capturar é muito reduzida, menor que de 1 $mm^2$. Pudemos constatar isto ao capturar a imagem de um \textregistered\ de dimensão muito reduzida que existe num selo das caixas dos ratos ao lado da marca Cherry GmbH, que se pode ser na Figura~\ref{fig:Cherry_box}. O \textregistered\ tinha o tamanho máximo que o rato conseguia capturar. A imagem capturada pelo rato pode ser vista na Figura~\ref{fig:registed_capture}.
+A área que o rato permite capturar é muito reduzida, menor que de 1 $mm^2$. Pudemos constatar isto ao capturar a imagem de um \textregistered\ de dimensão muito reduzida que existe num selo das caixas dos ratos ao lado da marca Cherry GmbH, que se pode ser na Figura~\ref{fig:Cherry_box}. O \textregistered\ tinha o tamanho máximo que o rato conseguia capturar. A imagem capturada pelo rato pode ser vista na Figura~\ref{fig:registed_capture}.
 
 \begin{figure}[b]
 \centering
 
-\caption{selo existente na caixa do rato, com \textregistered\ assinalado}
+\caption{Selo da caixa do rato, com \textregistered\ assinalado}
 \label{fig:Cherry_box}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[scale=0.5]{rprintscreen}
+\includegraphics{rprintscreen}
 \caption{imagem do \textregistered\ da Figura~\ref{fig:Cherry_box} capturada pelo rato}
 \label{fig:registed_capture}
 \end{figure}
