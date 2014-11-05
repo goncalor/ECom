@@ -23,31 +23,30 @@
 \section{Comunicação}
 
 \subsection{PC - PIC: USB}
-A comunicação implementada entre o PC e o PIC utilizou a interface USB (Universal Serial Bus).
+A comunicação implementada entre o PC e o PIC utilizou a interface e protocolo USB (Universal Serial Bus).
 
 \subsection{PIC - Sensor: SPI half-duplex}
 O método de comunicação utilizado pelo sensor é SPI (Serial Peripheral Interface), que inclui as variantes Full-Duplex e Half-Duplex, ambas permitem a comunicação entre um único Master e vários Slaves.
-No caso do sensor a variante utilizada é Half-Duplex que tem como diferenças principais comparado ao Full-Duplex a utilização de menos um porto (para um total de 3) com a desvantagem de não permitir comunicação bidireccional simultânea como o Full-Duplex.
+No caso do sensor a variante utilizada é Half-Duplex que tem como diferenças principais comparado ao Full-Duplex a utilização de menos um pino (são usados 3 pinos no total) com a desvantagem de não permitir comunicação bidireccional simultânea como o Full-Duplex.
+
 \begin{figure}[H]
 \centering
 
 \caption{Imagem pretty de SPI half duplex}
-\label{fig:Cherry_box}
+\label{fig:SPI_halfduplex}
 \end{figure}
 
 \subsubsection{Explicação do SPI Half-Duplex}  
 A variante Half-Duplex usa os seguintes portos:
 \begin{enumerate}
     \item SS $\rightarrow$ Slave Select: Quando posto a Low activa o Slave (porto controlado apenas pelo Master)
-    \item MSIO $\rightarrow$ Master Slave Input Output: porto de envio/recepção de dados (controlado por ambos mas não em simultâneo)
-    \item SCLK $\rightarrow$ Slave Clock: O relógio usado pelo Slave (porto controlado apenas pelo Master)
+    \item MISO $\rightarrow$ Master Input, Slave Output: porto de envio/recepcção de dados (controlado por ambos mas não em simultâneo)
+    \item SCLK $\rightarrow$ Serial Clock: O relógio usado pelo Slave (porto controlado apenas pelo Master)
 \end{enumerate}
 
 Para efectuar uma comunicação o Master (no caso do projecto é o PIC) coloca o porto SS a Low para activar o Slave (que neste caso é o sensor), gera um sinal de relógio no porto SCLK e envia a informação bit a bit para o Slave.
 
-Especificamente entre o PIC e o sensor as comunicações são feitas por bytes (ou seja, tanto o PIC como o sensor enviam e esperam receber um byte completo)
-
-
+Entre o PIC e o sensor as comunicações são feitas byte a byte. O Master envia o endereço que pretende ler ou escrever: se for uma leitura o bit mais significativo do endereço é deixado a 0; se for uma operação de escrita esse bit é colocado a 1. No caso da leitura o Master envia 1 B (o endereço) e o Slave responde com 1 B (o valor nesse endereço). No caso da escrita o Master envia 2 B (endereço e valor a escrever) e o Slave 0 B. O sensor lê a linha MISO nos flancos ascendentes e escreve nela nos flancos descendentes.
 
 
 \section{Estratégias}
