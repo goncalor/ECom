@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \usepackage{rotating}
+\usepackage{subcaption}
 
 \begin{document}
 
@@ -39,14 +40,14 @@ No caso do sensor a variante utilizada é Half-Duplex que tem como diferenças p
 \subsubsection{Explicação do SPI Half-Duplex}  
 A variante Half-Duplex usa os seguintes portos:
 \begin{enumerate}
-    \item SS $\rightarrow$ Slave Select: Quando posto a Low activa o Slave (porto controlado apenas pelo Master)
-    \item MISO $\rightarrow$ Master Input, Slave Output: porto de envio/recepcção de dados (controlado por ambos mas não em simultâneo)
-    \item SCLK $\rightarrow$ Serial Clock: O relógio usado pelo Slave (porto controlado apenas pelo Master)
+    \item SS $\rightarrow$ Slave Select: Quando posto a Low activa o Slave (porto controlado apenas pelo Master);
+    \item SDIO $\rightarrow$ Serial Data Input/Output: porto de envio/recepcção de dados (controlado por ambos mas não em simultâneo);
+    \item SCLK $\rightarrow$ Serial Clock: O relógio usado pelo Slave (porto controlado apenas pelo Master).
 \end{enumerate}
 
 Para efectuar uma comunicação o Master (no caso do projecto é o PIC) coloca o porto SS a Low para activar o Slave (que neste caso é o sensor), gera um sinal de relógio no porto SCLK e envia a informação bit a bit para o Slave.
 
-Entre o PIC e o sensor as comunicações são feitas byte a byte. O Master envia o endereço que pretende ler ou escrever: se for uma leitura o bit mais significativo do endereço é deixado a 0; se for uma operação de escrita esse bit é colocado a 1. No caso da leitura o Master envia 1 B (o endereço) e o Slave responde com 1 B (o valor nesse endereço). No caso da escrita o Master envia 2 B (endereço e valor a escrever) e o Slave 0 B. O sensor lê a linha MISO nos flancos ascendentes e escreve nela nos flancos descendentes.
+Entre o PIC e o sensor as comunicações são feitas byte a byte. O Master envia o endereço que pretende ler ou escrever: se for uma leitura o bit mais significativo do endereço é deixado a 0; se for uma operação de escrita esse bit é colocado a 1. No caso da leitura o Master envia 1 B (o endereço) e o Slave responde com 1 B (o valor nesse endereço). No caso da escrita o Master envia 2 B (endereço e valor a escrever) e o Slave 0 B. O sensor lê a linha SDIO nos flancos ascendentes e escreve nela nos flancos descendentes. Os bit menos significativo de cada byte é sempre o primeiro a ser enviado.
 
 
 \section{Estratégias}
@@ -181,12 +182,14 @@ Uma vez que os pacotes já implementados no código fornecido estão limitados a
 \put(120,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 1}}}
 \end{picture}
 \caption{Divisão da imagem em troços}
-\label{picture_layout}
+\label{fig:picture_layout}
 \end{figure}
 
 Ao fazer esta alteração, havia conjuntos verticais de píxeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verifica na versão anterior do programa.
 
-Ao eliminar as sucessivas comunicações entre PC e PIC, não há tempo para o circuito do sensor capturar um píxel válido. Uma vez que não era feita a verificação da validade do píxel, os valores eram repetidos, criando os padrões de píxeis em colunas.
+Ao eliminar as sucessivas comunicações entre PC e PIC, não há tempo para o circuito do sensor capturar um píxel válido. Uma vez que não era feita a verificação da validade do píxel, os valores eram repetidos, criando os padrões de píxeis em colunas. Foi então adicionada a verificação de se o \textit{bit grabber} já tinha disponível um píxel válido. Esta informação está contida no bit mais significativo do valor do píxel. Sendo assim existem apenas 128 valores possíveis para cada píxel. Então, de forma a que a imagem não ficasse mais escura do que devia (porque branco no PC corresponde a ter R, G e B a 255) decidimos  fazer um shift left de um bit. Isto corresponde a mapear todos os valores ímpares para um valor par superior.
+
+A Figura~\ref{fig:picture_layout} mostra a correspondência entre os píxeis desenhados no ecrã e os 5 pacotes que são pedidos ao PIC. O primeiro pacote a ser pedido corresponde às colunas da direita porque o rato captura as imagens da direita para a esquerda. Para além disso captura as colunas de baixo para cima.
 
 \subsubsection{3ª Iteração}
 
@@ -208,7 +211,7 @@ Bastou-nos adaptar o código do micro-controlador para fazer uma verificação d
 
 \subsection{Cursor e Captura de Imagem Simultâneos}
 
-Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, o formato do pacote de dados foi alterado de maneira a incluir os valores de $\Delta x$ e $\Delta y$, para além dos 45 píxeis da imagem a mostrar.
+Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, o formato do pacote de dados foi alterado de maneira a incluir os valores de $\Delta x$ e $\Delta y$, para além dos 45 píxeis da imagem a mostrar. Juntando os dados de imagem e do movimento do rato no mesmo pacote reduz-se o número de pedidos feitos via USB.
 
 \begin{figure}[H]
 \centering
@@ -228,26 +231,29 @@ Uma vez constatado que o processo mais demorado é a comunicação via USB, foi 
 \pagebreak
 \section{Conclusões}
 
-Os resultados finais foram os esperados. O rato e a imagem são actualizados em simultâneo, sendo que a posição do rato é actulizada 5 vezes por cada actulização total da imagem.
+Os resultados finais foram os esperados. O rato e a imagem são actualizados em simultâneo, sendo que a posição do rato é actulizada 5 vezes por cada actulização completa da imagem.
 
-A área que o rato permite capturar é muito reduzida, menor que de 1 $mm^2$. Pudemos constatar isto ao capturar a imagem de um \textregistered\ de dimensão muito reduzida que existe num selo das caixas dos ratos ao lado da marca Cherry GmbH, que se pode ser na Figura~\ref{fig:Cherry_box}. O \textregistered\ tinha o tamanho máximo que o rato conseguia capturar. A imagem capturada pelo rato pode ser vista na Figura~\ref{fig:registed_capture}.
-
-\begin{figure}[b]
-\centering
-
-\caption{Selo da caixa do rato, com \textregistered\ assinalado}
-\label{fig:Cherry_box}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics{rprintscreen}
-\caption{imagem do \textregistered\ da Figura~\ref{fig:Cherry_box} capturada pelo rato}
-\label{fig:registed_capture}
-\end{figure}
+A área que o rato permite capturar é muito reduzida, menor que de 1 $mm^2$. Pudemos constatar isto ao capturar a imagem de um \textregistered\ de dimensão muito reduzida que existe num selo das caixas dos ratos ao lado da marca Cherry GmbH, que se pode ver na Figura~\ref{fig:Cherry_box}. O \textregistered\ tem o tamanho máximo que o rato consegue capturar. A imagem capturada pelo rato pode ser vista na Figura~\ref{fig:registed_capture}.
 
 Alterar a resolução do rato produziu também o efeito esperado: ao reduzirmos a resolução o rato move-se mais rapidamente no ecrã.
 
 Em geral o movimento do rato devia ser um pouco mais rápido para se aproximar da velocidade normal de um rato. A imagem capturada demora um pouco a ser actulizada mas é rápida o suficiente para se conseguir perceber sobre o que é que o rato está a passar quando é movido.
+
+\begin{figure}[h]
+\centering
+\begin{subfigure}[b]{0.45\textwidth}
+\centering
+•
+\caption{}
+\label{fig:Cherry_box}
+\end{subfigure}%
+\begin{subfigure}[b]{0.45\textwidth}
+\centering
+\includegraphics[width=\linewidth]{rprintscreen}
+\caption{}
+\label{fig:registed_capture}
+\end{subfigure}
+\caption{exemplo de imagem capturada: (a) selo da caixa do rato, com \textregistered\ assinalado (b) imagem capturada pelo rato}
+\end{figure}
 
 \end{document}
