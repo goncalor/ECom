@@ -31,18 +31,18 @@ O método de comunicação utilizado pelo sensor é SPI (Serial Peripheral Inter
 No caso do sensor a variante utilizada é Half-Duplex que tem como diferenças principais comparado ao Full-Duplex a utilização de menos um pino (são usados 3 pinos no total) com a desvantagem de não permitir comunicação bidireccional simultânea como o Full-Duplex.
 
 \begin{figure}[H]
-\centering
+	\centering
 
-\caption{Imagem pretty de SPI half duplex}
-\label{fig:SPI_halfduplex}
+	\caption{Imagem pretty de SPI half duplex}
+	\label{fig:SPI_halfduplex}
 \end{figure}
 
 \subsubsection{Explicação do SPI Half-Duplex}  
 A variante Half-Duplex usa os seguintes portos:
 \begin{enumerate}
-    \item SS $\rightarrow$ Slave Select: Quando posto a Low activa o Slave (porto controlado apenas pelo Master);
-    \item SDIO $\rightarrow$ Serial Data Input/Output: porto de envio/recepcção de dados (controlado por ambos mas não em simultâneo);
-    \item SCLK $\rightarrow$ Serial Clock: O relógio usado pelo Slave (porto controlado apenas pelo Master).
+	\item SS $\rightarrow$ Slave Select: Quando posto a Low activa o Slave (porto controlado apenas pelo Master);
+	\item SDIO $\rightarrow$ Serial Data Input/Output: porto de envio/recepcção de dados (controlado por ambos mas não em simultâneo);
+	\item SCLK $\rightarrow$ Serial Clock: O relógio usado pelo Slave (porto controlado apenas pelo Master).
 \end{enumerate}
 
 Para efectuar uma comunicação o Master (no caso do projecto é o PIC) coloca o porto SS a Low para activar o Slave (que neste caso é o sensor), gera um sinal de relógio no porto SCLK e envia a informação bit a bit para o Slave.
@@ -58,47 +58,47 @@ Durante o laboratório, efectuámos alterações iterativas ao código que nos f
 \subsubsection{1ª Iteração}
 Processos de actualização da posição do cursor:
 \begin{enumerate}
-    \item PC $\rightarrow$ PIC: um pedido de leitura do registo 3 ($\Delta x$) via USB
-    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
-    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x03} via SPI Half-duplex
-    \item PIC $\rightarrow$ PC: o valor lido do sensor, que corresponde a $\Delta x$, via USB
-    \item PC $\rightarrow$ PIC: um pedido de leitura do registo 4 ($\Delta y$) via USB
-    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x04}) a ser lido via SPI Half-duplex
-    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x04} via SPI Half-duplex
-    \item PIC $\rightarrow$ PC: o valor lido do sensor, que corresponde a $\Delta y$, via USB
-    \item PC: As variações nas posições são adicionadas às coordenadas actuais do rato.
+	\item PC $\rightarrow$ PIC: um pedido de leitura do registo 3 ($\Delta x$) via USB
+	\item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
+	\item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x03} via SPI Half-duplex
+	\item PIC $\rightarrow$ PC: o valor lido do sensor, que corresponde a $\Delta x$, via USB
+	\item PC $\rightarrow$ PIC: um pedido de leitura do registo 4 ($\Delta y$) via USB
+	\item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x04}) a ser lido via SPI Half-duplex
+	\item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x04} via SPI Half-duplex
+	\item PIC $\rightarrow$ PC: o valor lido do sensor, que corresponde a $\Delta y$, via USB
+	\item PC: As variações nas posições são adicionadas às coordenadas actuais do rato.
 \end{enumerate}
 
 Formato dos pacotes de dados:
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{1mm}
-\begin{picture}(120,10)
-\multiput(0,0)(40,0){4}{\line(0,1){10}}
-\multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 0: Comando de Leitura}}}}
+	\centering
+	\setlength{\unitlength}{1mm}
+	\begin{picture}(120,10)
+		\multiput(0,0)(40,0){4}{\line(0,1){10}}
+		\multiput(0,0)(0,10){2}{\line(1,0){120}}
+		\put(0,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 0: Comando de Leitura}}}}
 
-\put(40,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 1: Endereço a Ler}}}}
+		\put(40,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 1: Endereço a Ler}}}}
 
-\put(80,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 2: Comprimento da Resposta}}}}
-\end{picture}
-\caption{Pacote PC $\rightarrow$ PIC}
-\label{pack_pc_pic_1}
+		\put(80,0){\makebox(40,10){\parbox{4cm}{\centering\texttt{Byte 2: Comprimento da Resposta}}}}
+	\end{picture}
+	\caption{Pacote PC $\rightarrow$ PIC}
+	\label{pack_pc_pic_1}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{1mm}
-\begin{picture}(120,10)
-\put(0,0){\line(0,1){10}}
-\multiput(90,0)(30,0){2}{\line(0,1){10}}
-\multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(90,10){\texttt{Bytes 0-2: Mensagem Original}}}
-\put(90,0){\makebox(30,9){\parbox{3cm}{\footnotesize\centering\texttt{Byte 3: Conteúdo do Registo}}}}
-\end{picture}
-\caption{Pacote PIC $\rightarrow$ PC}
-\label{pack_pic_pc_1}
+	\centering
+	\setlength{\unitlength}{1mm}
+	\begin{picture}(120,10)
+		\put(0,0){\line(0,1){10}}
+		\multiput(90,0)(30,0){2}{\line(0,1){10}}
+		\multiput(0,0)(0,10){2}{\line(1,0){120}}
+		\put(0,0){\makebox(90,10){\texttt{Bytes 0-2: Mensagem Original}}}
+		\put(90,0){\makebox(30,9){\parbox{3cm}{\footnotesize\centering\texttt{Byte 3: Conteúdo do Registo}}}}
+	\end{picture}
+	\caption{Pacote PIC $\rightarrow$ PC}
+	\label{pack_pic_pc_1}
 \end{figure}
 
 No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava'' pelo ecrã. Foi determinado que o processo que mais tempo gasta é a comunicação via USB, e, como tal, o código foi adaptado de maneira a diminuir estas comunicações.
@@ -108,54 +108,54 @@ No entanto, esta abordagem mostrou-se muito lenta, isto é, o rato ``soluçava''
 \subsubsection{2ª Iteração}
 Processos de actualização da posição do cursor:
 \begin{enumerate}
-    \item PC $\rightarrow$ PIC: um pedido de leitura dos registo 3 e 4($\Delta x$ e $\Delta y$) via USB
-    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
-    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x03} via SPI Half-duplex
-    \item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x04}) a ser lido via SPI Half-duplex
-    \item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x04} via SPI Half-duplex
-    \item PIC $\rightarrow$ PC: os valores lidos do sensor, que correspondem a $\Delta x$ e $\Delta y$, via USB
-    \item PC: As variações nas posições são adicionadas às coordenadas actuais do rato.
+	\item PC $\rightarrow$ PIC: um pedido de leitura dos registo 3 e 4($\Delta x$ e $\Delta y$) via USB
+	\item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x03}) a ser lido via SPI Half-duplex
+	\item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x03} via SPI Half-duplex
+	\item PIC $\rightarrow$ Sensor: o endereço do registo (\texttt{0x04}) a ser lido via SPI Half-duplex
+	\item Sensor $\rightarrow$ PIC: o valor contido no registo \texttt{0x04} via SPI Half-duplex
+	\item PIC $\rightarrow$ PC: os valores lidos do sensor, que correspondem a $\Delta x$ e $\Delta y$, via USB
+	\item PC: As variações nas posições são adicionadas às coordenadas actuais do rato.
 \end{enumerate}
 
 Formato dos pacotes de dados:
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{1mm}
-\begin{picture}(120,10)
-\multiput(0,0)(60,0){3}{\line(0,1){10}}
-\multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(60,10){\parbox{4cm}{\centering\texttt{Byte 0: Comando de Leitura Personalizado}}}}
-\put(60,0){\makebox(60,9){\parbox{4cm}{\centering\texttt{Byte 1: Comprimento da Resposta}}}}
-\end{picture}
-\caption{Pacote PC $\rightarrow$ PIC}
-\label{pack_pc_pic_2}
+	\centering
+	\setlength{\unitlength}{1mm}
+	\begin{picture}(120,10)
+		\multiput(0,0)(60,0){3}{\line(0,1){10}}
+		\multiput(0,0)(0,10){2}{\line(1,0){120}}
+		\put(0,0){\makebox(60,10){\parbox{4cm}{\centering\texttt{Byte 0: Comando de Leitura Personalizado}}}}
+		\put(60,0){\makebox(60,9){\parbox{4cm}{\centering\texttt{Byte 1: Comprimento da Resposta}}}}
+	\end{picture}
+	\caption{Pacote PC $\rightarrow$ PIC}
+	\label{pack_pc_pic_2}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{1mm}
-\begin{picture}(120,10)
-\put(0,0){\line(0,1){10}}
-\multiput(60,0)(30,0){3}{\line(0,1){10}}
-\multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(0,0){\makebox(60,10){\parbox{6cm}{\centering\texttt{Bytes 0-1: Mensagem Original}}}}
-\put(60,0){\makebox(30,10){\texttt{Byte 2:} $\Delta x$}}
-\put(90,0){\makebox(30,10){\texttt{Byte 3:} $\Delta y$}}
-\end{picture}
-\caption{Pacote PIC $\rightarrow$ PC}
-\label{pack_pic_pc_2}
+	\centering
+	\setlength{\unitlength}{1mm}
+	\begin{picture}(120,10)
+		\put(0,0){\line(0,1){10}}
+		\multiput(60,0)(30,0){3}{\line(0,1){10}}
+		\multiput(0,0)(0,10){2}{\line(1,0){120}}
+		\put(0,0){\makebox(60,10){\parbox{6cm}{\centering\texttt{Bytes 0-1: Mensagem Original}}}}
+		\put(60,0){\makebox(30,10){\texttt{Byte 2:} $\Delta x$}}
+		\put(90,0){\makebox(30,10){\texttt{Byte 3:} $\Delta y$}}
+	\end{picture}
+	\caption{Pacote PIC $\rightarrow$ PC}
+	\label{pack_pic_pc_2}
 \end{figure}
 
 \subsection{Captura de Imagem}
 \subsubsection{1ª Iteração}
 Os processos correspondentes à leitura de cada um dos píxeis na implementação inicial são:
 \begin{enumerate}
-    \item PC $\rightarrow$ PIC: um pedido de leitura do registo \texttt{0x0b} via USB
-    \item PIC $\rightarrow$ Sensor: o endereço do registo \texttt{0x0b} via SPI Half-duplex
-    \item Sensor $\rightarrow$ PIC: o valor contido no registo via SPI Half-duplex
-    \item PIC $\rightarrow$ PC: uma mensagem com o valor lido do registo
-    \item PC: Mapeamento dos dados recebidos para um rectângulo no ecrã.
+	\item PC $\rightarrow$ PIC: um pedido de leitura do registo \texttt{0x0b} via USB
+	\item PIC $\rightarrow$ Sensor: o endereço do registo \texttt{0x0b} via SPI Half-duplex
+	\item Sensor $\rightarrow$ PIC: o valor contido no registo via SPI Half-duplex
+	\item PIC $\rightarrow$ PC: uma mensagem com o valor lido do registo
+	\item PC: Mapeamento dos dados recebidos para um rectângulo no ecrã.
 \end{enumerate}
 
 Esta abordagem permite-nos mostrar uma imagem a aproximadamente cada 15 segundos, isto é, muito longe da solução em tempo-real pretendida.
@@ -166,28 +166,28 @@ De maneira a diminuir o número de comunicações USB por cada imagem, a soluç�
 Uma vez que os pacotes já implementados no código fornecido estão limitados a 64 bytes, foram adaptados de maneira a cada pacote PIC $\rightarrow$ PC conter os dados de 45 píxeis, isto é, 3 colunas da imagem.
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{0,5mm}
-\begin{picture}(150,150)
-\multiput(0,0)(10,0){16}{\line(0,1){150}}
-\multiput(0,0)(0,10){16}{\line(1,0){150}}
-\multiput(2,2)(30,0){5}{\color{red} \line(0,1){146}}
-\multiput(2,2)(30,0){5}{\color{red} \line(1,0){26}}
-\multiput(28,2)(30,0){5}{\color{red} \line(0,1){146}}
-\multiput(2,148)(30,0){5}{\color{red} \line(1,0){26}}
-\put(0,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 5}}}
-\put(30,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 4}}}
-\put(60,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 3}}}
-\put(90,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 2}}}
-\put(120,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 1}}}
-\end{picture}
-\caption{Divisão da imagem em troços}
-\label{fig:picture_layout}
+	\centering
+	\setlength{\unitlength}{0,5mm}
+	\begin{picture}(150,150)
+		\multiput(0,0)(10,0){16}{\line(0,1){150}}
+		\multiput(0,0)(0,10){16}{\line(1,0){150}}
+		\multiput(2,2)(30,0){5}{\color{red} \line(0,1){146}}
+		\multiput(2,2)(30,0){5}{\color{red} \line(1,0){26}}
+		\multiput(28,2)(30,0){5}{\color{red} \line(0,1){146}}
+		\multiput(2,148)(30,0){5}{\color{red} \line(1,0){26}}
+		\put(0,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 5}}}
+		\put(30,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 4}}}
+		\put(60,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 3}}}
+		\put(90,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 2}}}
+		\put(120,0){\makebox(30,150){\color{red} \rotatebox{90}{\LARGE Pacote 1}}}
+	\end{picture}
+	\caption{Divisão da imagem em troços}
+	\label{fig:picture_layout}
 \end{figure}
 
 Ao fazer esta alteração, havia conjuntos verticais de píxeis, de número arbitrário, com exactamente a mesma cor. O mesmo não se verifica na versão anterior do programa.
 
-Ao eliminar as sucessivas comunicações entre PC e PIC, não há tempo para o circuito do sensor capturar um píxel válido. Uma vez que não era feita a verificação da validade do píxel, os valores eram repetidos, criando os padrões de píxeis em colunas. Foi então adicionada a verificação de se o \textit{bit grabber} já tinha disponível um píxel válido. Esta informação está contida no bit mais significativo do valor do píxel. Sendo assim existem apenas 128 valores possíveis para cada píxel. Então, de forma a que a imagem não ficasse mais escura do que devia (porque branco no PC corresponde a ter R, G e B a 255) decidimos  fazer um shift left de um bit. Isto corresponde a mapear todos os valores ímpares para um valor par superior.
+Ao eliminar as sucessivas comunicações entre PC e PIC, não há tempo para o circuito do sensor capturar um píxel válido. Uma vez que não era feita a verificação da validade do píxel, os valores eram repetidos, criando os padrões de píxeis em colunas. Foi então adicionada a verificação de se o \textit{bit grabber} já tinha disponível um píxel válido. Esta informação está contida no bit mais significativo do valor do píxel. Sendo assim existem apenas 128 valores possíveis para cada píxel. Então, de forma a que a imagem não ficasse mais escura do que devia (porque branco no PC corresponde a ter R, G e B a 255) decidimos	 fazer um shift left de um bit. Isto corresponde a mapear todos os valores ímpares para um valor par superior.
 
 A Figura~\ref{fig:picture_layout} mostra a correspondência entre os píxeis desenhados no ecrã e os 5 pacotes que são pedidos ao PIC. O primeiro pacote a ser pedido corresponde às colunas da direita porque o rato captura as imagens da direita para a esquerda. Para além disso captura as colunas de baixo para cima.
 
@@ -196,17 +196,17 @@ A Figura~\ref{fig:picture_layout} mostra a correspondência entre os píxeis des
 Bastou-nos adaptar o código do micro-controlador para fazer uma verificação do bit de validade antes de ler o píxel seguinte para que a imagem aparecesse correctamente.
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{1mm}
-\begin{picture}(120,10)
-\multiput(0,0)(120,0){2}{\line(0,1){10}}
-\multiput(0,0)(0,10){2}{\line(1,0){120}}
-\put(20,0){\line(0,1){10}}
-\put(0,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 0-1: Mensagem Original}}}}
-\put(20,0){\makebox(100,9){\texttt{Bytes 2-46: Bytes de píxeis}}}
-\end{picture}
-\caption{Pacote PIC $\rightarrow$ PC}
-\label{pack_pic_pc_3}
+	\centering
+	\setlength{\unitlength}{1mm}
+	\begin{picture}(120,10)
+		\multiput(0,0)(120,0){2}{\line(0,1){10}}
+		\multiput(0,0)(0,10){2}{\line(1,0){120}}
+		\put(20,0){\line(0,1){10}}
+		\put(0,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 0-1: Mensagem Original}}}}
+		\put(20,0){\makebox(100,9){\texttt{Bytes 2-46: Bytes de píxeis}}}
+	\end{picture}
+	\caption{Pacote PIC $\rightarrow$ PC}
+	\label{pack_pic_pc_3}
 \end{figure}
 
 \subsection{Cursor e Captura de Imagem Simultâneos}
@@ -214,18 +214,18 @@ Bastou-nos adaptar o código do micro-controlador para fazer uma verificação d
 Uma vez constatado que o processo mais demorado é a comunicação via USB, foi decidido não repetir o mesmo erro uma vez mais. Assim, o formato do pacote de dados foi alterado de maneira a incluir os valores de $\Delta x$ e $\Delta y$, para além dos 45 píxeis da imagem a mostrar. Juntando os dados de imagem e do movimento do rato no mesmo pacote reduz-se o número de pedidos feitos via USB.
 
 \begin{figure}[H]
-\centering
-\setlength{\unitlength}{1mm}
-\begin{picture}(120,10)
-\multiput(0,0)(120,0){2}{\line(0,1){10}}
-\multiput(0,0)(0,10){2}{\line(1,0){120}}
-\multiput(20,0)(80,0){2}{\line(0,1){10}}
-\put(0,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 0-1: Mensagem Original}}}}
-\put(20,0){\makebox(80,9){\texttt{Bytes 2-46: Bytes de píxeis}}}
-\put(100,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 47-48: $\Delta x$\texttt{ and }$\Delta y$}}}}
-\end{picture}
-\caption{Pacote PIC $\rightarrow$ PC}
-\label{pack_pic_pc_4}
+	\centering
+	\setlength{\unitlength}{1mm}
+	\begin{picture}(120,10)
+		\multiput(0,0)(120,0){2}{\line(0,1){10}}
+		\multiput(0,0)(0,10){2}{\line(1,0){120}}
+		\multiput(20,0)(80,0){2}{\line(0,1){10}}
+		\put(0,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 0-1: Mensagem Original}}}}
+		\put(20,0){\makebox(80,9){\texttt{Bytes 2-46: Bytes de píxeis}}}
+		\put(100,0){\makebox(20,9){\parbox{2cm}{\centering\footnotesize\texttt{Bytes 47-48: $\Delta x$\texttt{ and }$\Delta y$}}}}
+	\end{picture}
+	\caption{Pacote PIC $\rightarrow$ PC}
+	\label{pack_pic_pc_4}
 \end{figure}
 
 \pagebreak
@@ -240,20 +240,20 @@ Alterar a resolução do rato produziu também o efeito esperado: ao reduzirmos 
 Em geral o movimento do rato devia ser um pouco mais rápido para se aproximar da velocidade normal de um rato. A imagem capturada demora um pouco a ser actulizada mas é rápida o suficiente para se conseguir perceber sobre o que é que o rato está a passar quando é movido.
 
 \begin{figure}[h]
-\centering
-\begin{subfigure}[b]{0.45\textwidth}
-\centering
-•
-\caption{}
-\label{fig:Cherry_box}
-\end{subfigure}%
-\begin{subfigure}[b]{0.45\textwidth}
-\centering
-\includegraphics[width=\linewidth]{rprintscreen}
-\caption{}
-\label{fig:registed_capture}
-\end{subfigure}
-\caption{exemplo de imagem capturada: (a) selo da caixa do rato, com \textregistered\ assinalado (b) imagem capturada pelo rato}
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		•
+		\caption{}
+		\label{fig:Cherry_box}
+	\end{subfigure}%
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{rprintscreen}
+		\caption{}
+		\label{fig:registed_capture}
+	\end{subfigure}
+	\caption{exemplo de imagem capturada: (a) selo da caixa do rato, com \textregistered\ assinalado (b) imagem capturada pelo rato}
 \end{figure}
 
 \end{document}
