@@ -22,6 +22,7 @@
 \pagebreak
 
 \section{Comunicação}
+\label{sec:comunicacao}
 
 \subsection{PC - PIC: USB}
 A comunicação implementada entre o PC e o PIC utilizou a interface e protocolo USB (Universal Serial Bus) em modo Full Speed (velocidade da versão USB 1.1).
@@ -30,13 +31,6 @@ A comunicação é feita por pacotes de dados que incluem o PID seguido de 64 By
 \subsection{PIC - Sensor: SPI half-duplex}
 O método de comunicação utilizado pelo sensor é SPI (Serial Peripheral Interface), que inclui as variantes Full-Duplex e Half-Duplex, ambas permitem a comunicação entre um único Master e vários Slaves.
 No caso do sensor a variante utilizada é Half-Duplex que tem como diferenças principais comparado ao Full-Duplex a utilização de menos um pino (são usados 3 pinos no total) com a desvantagem de não permitir comunicação bidireccional simultânea como o Full-Duplex.
-
-\begin{figure}[H]
-	\centering
-
-	\caption{Imagem pretty de SPI half duplex}
-	\label{fig:SPI_halfduplex}
-\end{figure}
 
 \subsubsection{Explicação do SPI Half-Duplex}  
 A variante Half-Duplex usa os seguintes portos:
@@ -55,7 +49,7 @@ Entre o PIC e o sensor as comunicações são feitas byte a byte. O Master envia
 O sensor utilizado (ADNS-5020-EN) permite capturar imagens de cerca de 1mm por 1mm e implementa internamente algoritmos que lhe permitem determinar os movimentos do rato sobre um plano. O controlo e comunicação do sensor é baseada em escritas e leituras de registos internos do sensor, feitas através de SPI Half-Duplex.
 
 \subsection{PIC}
-Para implementar a comunicação entre o rato e o computador foi utilizado o PIC18F4550 (Peripheral Interface Controller), programado em C e ligado por USB ao computador e por fios ao sensor, utilizando os protocolos mencionados na secção 1
+Para implementar a comunicação entre o rato e o computador foi utilizado o PIC18F4550 (Peripheral Interface Controller), programado em C e ligado por USB ao computador e por fios ao sensor, utilizando os protocolos mencionados na Secção~\ref{sec:comunicacao}.
 
 \section{Estratégias}
 Durante o laboratório, efectuámos alterações iterativas ao código que nos foi fornecido de maneira a implementar as funcionalidades pretendidas.
@@ -248,13 +242,13 @@ Em geral o movimento do rato devia ser um pouco mais rápido para se aproximar d
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.45\textwidth}
+	\begin{subfigure}[b]{0.40\textwidth}
 		\centering
-		•
+		\includegraphics[width=\linewidth]{box_pic}
 		\caption{}
 		\label{fig:Cherry_box}
-	\end{subfigure}%
-	\begin{subfigure}[b]{0.45\textwidth}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.40\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{rprintscreen}
 		\caption{}
