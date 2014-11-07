@@ -45,7 +45,7 @@ Para efectuar uma comunicação o Master (no caso do projecto é o PIC) coloca o
 Entre o PIC e o sensor as comunicações são feitas byte a byte. O Master envia o endereço que pretende ler ou escrever: se for uma leitura o bit mais significativo do endereço é deixado a 0; se for uma operação de escrita esse bit é colocado a 1. No caso da leitura o Master envia 1 B (o endereço) e o Slave responde com 1 B (o valor nesse endereço). No caso da escrita o Master envia 2 B (endereço e valor a escrever) e o Slave 0 B. O sensor lê a linha SDIO nos flancos ascendentes e escreve nela nos flancos descendentes. Os bit menos significativo de cada byte é sempre o primeiro a ser enviado.
 
 \section{Material Utilizado}
- \subsection{Sensor}
+\subsection{Sensor}
 O sensor utilizado (ADNS-5020-EN) permite capturar imagens de cerca de 1mm por 1mm e implementa internamente algoritmos que lhe permitem determinar os movimentos do rato sobre um plano. O controlo e comunicação do sensor é baseada em escritas e leituras de registos internos do sensor, feitas através de SPI Half-Duplex.
 
 \subsection{PIC}
@@ -232,13 +232,13 @@ Uma vez constatado que o processo mais demorado é a comunicação via USB, foi 
 \pagebreak
 \section{Conclusões}
 
-Os resultados finais foram os esperados. O rato e a imagem são actualizados em simultâneo, sendo que a posição do rato é actulizada 5 vezes por cada actulização completa da imagem.
+Os resultados finais foram os esperados. O rato e a imagem são actualizados em simultâneo, sendo que a posição do rato é actualizada 5 vezes por cada actualização completa da imagem.
 
 A área que o rato permite capturar é muito reduzida, menor que de 1 $mm^2$. Pudemos constatar isto ao capturar a imagem de um \textregistered\ de dimensão muito reduzida que existe num selo das caixas dos ratos ao lado da marca Cherry GmbH, que se pode ver na Figura~\ref{fig:Cherry_box}. O \textregistered\ tem o tamanho máximo que o rato consegue capturar. A imagem capturada pelo rato pode ser vista na Figura~\ref{fig:registed_capture}.
 
 Alterar a resolução do rato produziu também o efeito esperado: ao reduzirmos a resolução o rato move-se mais rapidamente no ecrã.
 
-Em geral o movimento do rato devia ser um pouco mais rápido para se aproximar da velocidade normal de um rato. A imagem capturada demora um pouco a ser actulizada mas é rápida o suficiente para se conseguir perceber sobre o que é que o rato está a passar quando é movido.
+Em geral o movimento do rato devia ser um pouco mais rápido para se aproximar da velocidade normal de um rato comum. A imagem capturada demora um pouco a ser actulizada mas é rápida o suficiente para se conseguir perceber sobre o que é que o rato está a passar quando é movido.
 
 \begin{figure}[h]
 	\centering
@@ -250,7 +250,7 @@ Em geral o movimento do rato devia ser um pouco mais rápido para se aproximar d
 	\end{subfigure}
 	\begin{subfigure}[b]{0.40\textwidth}
 		\centering
-		\includegraphics[width=\linewidth]{rprintscreen}
+		\includegraphics[width=\linewidth]{rprintscreen_red}
 		\caption{}
 		\label{fig:registed_capture}
 	\end{subfigure}
