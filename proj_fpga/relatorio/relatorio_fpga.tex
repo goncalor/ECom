@@ -64,6 +64,20 @@ O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada
 \subsubsection{Relevo (\textit{embossing})}
 
 \section{Conclusão e Observações}
+Embora o projecto não tenha grande utilidade prática na forma em que foi implementado (demasiados componentes de grande dimensão necessários para poder usar e com lenta iniciação) o valor lúdico é importante e não seria complexo adaptar o sistema usado a dimensões muito inferiores e de mais prática utilização. 
+
+A volatilidade da memória da placa obriga a utilização de um computador com o software instalado cada vez que se quer iniciar o sistema. Se for utilizado um tipo de memória não volátil, é possível retirar o computador do sistema. O monitor pode ser trocado por um LCD moderno de muito menores dimensões sem qualquer tipo de redesenho do sistema, desde que tenha uma interface VGA. Finalmente, todo o sistema pode tornar-se portátil com o uso de uma bateria, uma vez que os componentes necessários têm baixo consumo, sendo ainda mais prático se se recorrer a uma placa de prototipagem de menores dimensões ou, no caso da solução VHDL, implementar o hardware descrito pelo código. (EMBORA PROVAVELMENTE ISTO NAO FIQUE FEITO A TEMPO)
+
+Estas alterações são relativamente simples e aumentariam muito a utilidade do projecto se a intenção fosse a de fazer um produto. 
+Foi notada a baixa performance da implementação por software, que está limitada pela arquitectura do MicroBlaze e também pela performance da placa onde o MicroBlaze foi implementado. 
+
+No caso deste projecto a implementação por hardware seria claramente a mais adequada. O processamento feito é relativamente simples, o que diminui a vantagem do uso de um\textit{general purpose processor}, que é menos eficiente e tem uma performance muito inferior. É também relativamente fácil de paralelizar ambos os tipos de processamento, o que é ideal para implementações hardware. Na nossa opinião, a utilização de um \textit{general purpose processor} para a implementação final do sistema só seria justificada se a produção fosse de escala extremamente reduzida (o que seria bastante provável)
+
+Voltando ao objectivo lúdico do projecto, permitiu comparar as vantagens e desvantagens de implementações por hardware e software, assim como aprender vários dos componentes e softwares utilizados e entender como são feitos os tipos de processamento de imagem implementados.
+
+
+
+
 
 \bibliographystyle{plain}
 \nocite{}
