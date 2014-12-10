@@ -26,14 +26,14 @@
 \section{Introdução}
 Este projecto tem como principal objectivo fazer processamento de imagem recorrendo a uma placa Digilent S3 e a uma câmara com interface VGA. A placa Digilent S3 é uma placa de prototipagem com FPGA que nos permite implementar um processador MicroBlaze. O MicroBlaze comunica com a câmara para fazer o processamento da imagem capturada, que é mostrada num monitor através da saída VGA do dispositivo.
 
-A realização do projecto permitirá a aprendizagem de como implementar um \textit{general purpose processor} como o MicroBlaze numa FPGA, como programar (pelo software providenciado pela Xilinx\textregistered\ ) e utilizar periféricos com esse processador (neste caso a câmara). Aprendemos também como fazer algumas operações simples de processamento de imagem, Histograma e Embossing.
+A realização do projecto permitirá a aprendizagem de como implementar um \textit{general purpose processor} como o MicroBlaze numa FPGA, como programar (pelo software providenciado pela Xilinx\textregistered) e utilizar periféricos com esse processador (neste caso a câmara). Aprendemos também como fazer algumas operações simples de processamento de imagem, Histograma e Embossing.
 
 
 \section{Material Utilizado}
 \subsection*{Hardware}
 \begin{itemize}
 \item câmara VGA
-\item computador com Xilinx EDK e SDK
+\item computador com Xilinx EDK
 \item placa Digilent S3 com Xilinx FPGA XC3S1000-4
 \item monitor com entrada VGA
 \end{itemize}
@@ -41,7 +41,7 @@ A realização do projecto permitirá a aprendizagem de como implementar um \tex
 A placa Digilent S3 conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
 
 \subsection*{Software}
-O software utilizado neste projecto foi o Xilinx Embedded Development Kit (EDK) e o Xilinx Software Development Kit (SDK). No EDK foram feitas as ligações e algumas configurações da FPGA e no segundo foi desenvolvido o software para o MicroBlaze.
+O software utilizado neste projecto foi o Xilinx Platform Studio (XPS) e o Xilinx Software Development Kit (SDK), ambos incluídos no Xilinx Embedded Development Kit (EDK). No XPS são feitas as ligações e algumas configurações da FPGA e no SDK é desenvolvido o software para o MicroBlaze.
 
 \section{Especificações do Projecto}
 
@@ -56,7 +56,13 @@ O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada
 \label{subsec:LEDs}
 % LEDs a piscar
 
-\subsection{Processamento de Imagem no MicroBlaze\texttrademark}
+Esta parte introdutória do projecto pretende uma familiarização com os ambientes de desenvolvimento e a configuração inicial da FPGA de forma a se ter uma melhor preparação para as fases subsequentes do trabalho. Para isto é criado um projecto que visa a implementação algum software no processador \textit{softcore} MicroBlaze. O software a implementar permite controlar os LEDs da placa.
+
+Começamos por criar um novo projecto usando o Xilinx Platform Studio. De seguida, há definir para que placa e FPGA estamos a desenvolver a ainda qual a \textit{package} e o \textit{speedgrade}. O tipo de interligações escolhido para fazer a interface ente o processador e os dispositivos é PLB (\textit{processor local bus}). Define-se também que o tipo de processador a usar é MicroBlaze a funcionar a uma frequência de 50 MHz e com 32 KB de memória e sem cache.
+
+Até agora o sistema não tem qualquer periférico. O passo seguinte é adicionar um periférico que permita fazer chegar o sinal de controlo do MicroBlaze aos LEDs da placa. Para controlar o LEDs é usado um periférico que já vem definido no catálogo de propriedade intelectual do XPS (IP Catalog): o \textit{XPS General Purpose IO}. A largura deste módulo deverá ser de 8 bits visto que é esse o número de LEDs que existe na placa.
+
+Uma vez criado o periférico é preciso ligá-lo à PLB para que possa comunicar com o MicroBlaze e tornar as portas deste dispositivo externas. De seguida há que reservar uma região da memória do MicroBlaze para comunicação com o novo periférico. Essa região pode ser escolhida automaticamente pelo XPS.
 
 \subsection{Processamento de Imagem por Software e Hardware}
 \subsubsection{Histograma}
