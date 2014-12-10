@@ -24,12 +24,10 @@
 
 \pagenumbering{arabic}
 \section{Introdução}
-Este projecto tem como principal objectivo fazer processamento de imagem recorrendo a uma placa Digilent S3 e a uma câmara com interface VGA. A placa Digilent S3 é uma placa de prototipagem com FPGA que nos permite implementar um processador MicroBlaze. O MicroBlaze comunica com a câmara para fazer o processamento da imagem capturada, que é mostrada num monitor através da saída VGA da câmara.
+Este projecto tem como principal objectivo fazer processamento de imagem recorrendo a uma placa Digilent S3 e a uma câmara com interface VGA. A placa Digilent S3 é uma placa de prototipagem com FPGA que nos permite implementar um processador MicroBlaze. O MicroBlaze comunica com a câmara para fazer o processamento da imagem capturada, que é mostrada num monitor através da saída VGA do dispositivo.
 
 A realização do projecto permitirá a aprendizagem de como implementar um \textit{general purpose processor} como o MicroBlaze numa FPGA, como programar (pelo software providenciado pela Xilinx\textregistered\ ) e utilizar periféricos com esse processador (neste caso a câmara). Aprendemos também como fazer algumas operações simples de processamento de imagem, Histograma e Embossing.
 
-
-\section{Especificações do Projecto}
 
 \section{Material Utilizado}
 \subsection*{Hardware}
@@ -42,12 +40,16 @@ A realização do projecto permitirá a aprendizagem de como implementar um \tex
 
 A placa Digilent S3 conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
 
-A câmara VGA é configurada para trabalhar com uma resolução de 128$\times$64.
-
-O monitor é usado para mostrar a imagem captada pela câmara em simultâneo com a imagem transformada.
-
 \subsection*{Software}
-O software utilizado neste projecto foi o Xilinx Embedded Development Kit (EDK) e o Xilinx Software Development Kit (SDK). No EDK foram feitas as ligações e algumas configurações da FPGA e no segundo foi desenvolvido o software para o Microbalze.
+O software utilizado neste projecto foi o Xilinx Embedded Development Kit (EDK) e o Xilinx Software Development Kit (SDK). No EDK foram feitas as ligações e algumas configurações da FPGA e no segundo foi desenvolvido o software para o MicroBlaze.
+
+\section{Especificações do Projecto}
+
+A FPGA (\textit{Field Programmable Gate Array}) utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan-3, com 1000K (ou seja, 1M) portas de sistema, com \textit{Speed Grade} de -4, que corresponde a \textit{Standard Performance}. O relógio de sistema funciona a 326 MHz, existindo no dispositivo 4 \textit{Digital Clock Managers}, cada um equipado com um \textit{Delay Locked Loop}\cite{bib:s3datasheet}.
+
+A câmara VGA é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA.
+
+O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada para implementação em FPGAs proprietárias da Xilinx\textregistered\cite{bib:microblaze}. O ambiente de desenvolvimento disponibilizado permite configurar as ligações do sistema e dos barramentos de dados, bem como executar binários compilados no próprio ambiente.
 
 \section{Implementação do Projecto}
 \subsection{Introdução à FPGA}
@@ -65,6 +67,6 @@ O software utilizado neste projecto foi o Xilinx Embedded Development Kit (EDK) 
 
 \bibliographystyle{plain}
 \nocite{}
-\bibliography{}	% no spaces between commas!
+\bibliography{xilinx}	% no spaces between commas!
 
 \end{document}
