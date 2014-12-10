@@ -25,12 +25,29 @@
 \pagenumbering{arabic}
 \section{Introdução}
 
+
 \section{Especificações do Projecto}
 
 \section{Material Utilizado}
+\subsection*{Hardware}
+\begin{itemize}
+\item placa Digilent S3 com Xilinx FPGA XC3S1000-4
+\item câmara VGA
+\item monitor com entrada VGA
+\end{itemize}
+
+A placa Digilent S3 conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
+
+A câmara VGA é configurada para trabalhar com uma resolução de 128$\times$64.
+
+O monitor é usado para mostrar a imagem captada pela câmara em simultâneo com a imagem transformada.
+
+\subsection*{Software}
+O software utilizado neste projecto foi o Xilinx\textregistered\ Embedded Development Kit (EDK) e o Xilinx\textregistered\ Software Development Kit (SDK). No EDK foram feitas as ligações e algumas configurações da FPGA e no segundo foi desenvolvido o software para o Microbalze.
 
 \section{Implementação do Projecto}
 \subsection{Introdução à FPGA}
+\label{subsec:LEDs}
 % LEDs a piscar
 
 \subsection{Processamento de Imagem no Microblaze\texttrademark}
