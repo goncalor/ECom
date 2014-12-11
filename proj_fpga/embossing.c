@@ -14,7 +14,7 @@
 #define N (num_lin*num_col) // number of pixels in a frame
 unsigned char image[num_lin][num_col]; //image buffer
 short derivative[num_lin][num_col];
-char Kernel[3][3] = {{-2,-2,0},{-2,6,0},{0,0,0}};
+char Kernel[2][2] = {{-2,-2},{-2,6}};
 
 
 int main(void)
@@ -34,26 +34,23 @@ int main(void)
 		for(DelayCtl = 0; DelayCtl < LED_DELAY; DelayCtl++);		// apply the delay before next update
 
 		for(i = 0; i < num_lin; i++) for(j=0; j<num_col;j++) microblaze_bread_datafsl(image[i][j], cameraout_slot_id);		// read a full frame from the camera
-
+		
+		min = SHRT_MAX;
+		max = SHRT_MIN;
+		
 		for(i=0;i < num_lin; i++){
 			for(j=0; j<num_col;j++){
 				derivative[i][j] = 0;
-				for(k=0;k<3;k++){
-					for(l=0;l<3;l++){
-						if(i+k<num_lin && j+l<num_col) derivative[i][j] += image[i+k][j+l] * Kernel[k][l] + image[i+2-k][j+2-l] * Kernel[2-k][2-l];
-						/// /!\ else derivative[i][j] += image[i][j] * Kernel[k][l] + image[i][j] * Kernel[2-k][2-l];
+				for(k=0;k<2;k++){
+					for(l=0;l<2;l++){
+						if(i+k<num_lin && j+l<num_col) derivative[i][j] += image[i+k][j+l] * Kernel[k][l] + image[i+1+k][j+1+l] * Kernel[1-k][1-l];
 					}
 				}
-			}
-		}
-		min = SHRT_MAX;
-		max = SHRT_MIN;
-		for(i=0;i < num_lin; i++){
-			for(j=0; j<num_col;j++){
 				if(derivative[i][j] < min) min = derivative[i][j];
 				if(derivative[i][j] > max) max = derivative[i][j];
 			}
 		}
+		
 		for(i=0;i < num_lin; i++){
 			for(j=0; j<num_col;j++){
 				derivative[i][j] -= min;
