@@ -114,6 +114,12 @@ Este código começa por inicializar a \textit{driver} do periférico GPIO e def
 \subsection{Interface com a Câmara}
 % preparação da câmara para usar nas fases seguintes
 
+O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}. São depois adicionados duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo \cite{bib:appnoteXilinxFSL} nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar o IP adicionado pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
+
+O MicroBlaze é configurado para usar um multiplicador de 32 bits, divisão inteira e uma \textit{stream} FSL. De seguida, fazem-se as interligações necessárias entre o MicroBlaze, a interface VGA e a câmara. São ainda actualizadas as \textit{constraints} do ficheiro \texttt{.ucf} do projecto. Gera-se a \textit{bitstream}, que é exportada para o SDK.
+
+Da mesma forma que na Secção~\ref{subsec:LEDs} foi adicionado o ficheiro \texttt{mail\_leds.c}, no SDK adiciona-se agora o ficheiro \texttt{negative.c}. Liga-se a Digilent S3 à placa da câmara, programa-se a FPGA e corre-se o software. No monitor vê-se a imagem da câmara e por baixo a mesma imagem mas com escala de cinzentos invertida.
+
 \subsection{Processamento de Imagem por Software e Hardware}
 \subsubsection{Histograma}
 
