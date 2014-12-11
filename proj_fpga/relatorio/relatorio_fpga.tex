@@ -44,7 +44,8 @@
   tabsize=2                       % sets default tabsize to 2 spaces
 }
 
-
+\renewcommand{\lstlistingname}{Código}	% Listing x -> Código x
+\def\lstlistingautorefname{Código}
 
 
 
@@ -90,13 +91,25 @@ O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada
 \label{subsec:LEDs}
 % LEDs a piscar
 
-Esta parte introdutória do projecto pretende uma familiarização com os ambientes de desenvolvimento e a configuração inicial da FPGA de forma a se ter uma melhor preparação para as fases subsequentes do trabalho. Para isto é criado um projecto que visa a implementação algum software no processador \textit{softcore} MicroBlaze. O software a implementar permite controlar os LEDs da placa.
+Esta parte introdutória do projecto pretende uma familiarização com os ambientes de desenvolvimento e a configuração inicial da FPGA de forma a se ter uma melhor preparação para as fases subsequentes do trabalho. Para isso é criado um projecto que visa a implementação de software no processador \textit{softcore} MicroBlaze. O software a implementar permite controlar os LEDs da placa.
 
-Começamos por criar um novo projecto usando o Xilinx Platform Studio. De seguida, há definir para que placa e FPGA estamos a desenvolver a ainda qual a \textit{package} e o \textit{speedgrade}. O tipo de interligações escolhido para fazer a interface ente o processador e os dispositivos é PLB (\textit{processor local bus}). Define-se também que o tipo de processador a usar é MicroBlaze a funcionar a uma frequência de 50 MHz e com 32 KB de memória e sem cache.
+Começa-se por criar um novo projecto usando o Xilinx Platform Studio. De seguida, há que definir para que placa e FPGA estamos a desenvolver e ainda qual a \textit{package} e o \textit{speedgrade}. O tipo de interligações escolhido para fazer a interface entre o processador e os dispositivos é PLB (\textit{processor local bus}). Define-se também que o tipo de processador a usar é MicroBlaze a funcionar a uma frequência de 50 MHz e com 32 KB de memória e sem cache.
 
 Até agora o sistema não tem qualquer periférico. O passo seguinte é adicionar um periférico que permita fazer chegar o sinal de controlo do MicroBlaze aos LEDs da placa. Para controlar o LEDs é usado um periférico que já vem definido no catálogo de propriedade intelectual do XPS (IP Catalog): o \textit{XPS General Purpose IO}. A largura deste módulo deverá ser de 8 bits visto que é esse o número de LEDs que existe na placa.
 
-Uma vez criado o periférico é preciso ligá-lo à PLB para que possa comunicar com o MicroBlaze e tornar as portas deste dispositivo externas. De seguida há que reservar uma região da memória do MicroBlaze para comunicação com o novo periférico. Essa região pode ser escolhida automaticamente pelo XPS.
+Uma vez criado o periférico é preciso ligá-lo à PLB para que possa comunicar com o MicroBlaze e tornar externas as portas deste dispositivo. De seguida há que reservar uma região da memória do MicroBlaze para comunicação com o novo periférico. Essa região pode ser escolhida automaticamente pelo XPS.
+
+Antes de gerar o \textit{bitstream} falta ainda alterar o ficheiro \texttt{.ucf} para impor as \textit{contraints} adequadas ao projecto, como a frequência de operação e o mapeamento para as portas externas. Neste cado o ficheiro \texttt{.ucf} adequado é fornecido pelos docentes. O \textit{bitstream} pode agora ser gerado (note-se que este processo é demorado, cerca de 10 minutos) e após isso pode exportar-se as configurações de hardware para o SDK. A partir deste ponto o desenvolvimento é feito no SDK.
+
+Está-se agora apto a implementar o software que se queira correr no MicroBlaze. No SDK cria-se um novo \textit{Board Support Package} e um projecto em C a que se adiciona um ficheiro de código \texttt{main\_leds.c}. Após a escrita do código há que gerar o \textit{Linker Script}, que permitirá gerar o executável.
+
+Está tudo preparado para programar a FPGA e correr o executável. Neste caso se tudo for feito correctamente os LEDs da placa deverão acender e apagar sequencialmente como que fazendo um \textit{rotate} de um bit.
+
+\lstinputlisting[language=C, label=code:main_leds, caption=\texttt{main\_leds.c} após alteração]{../main_leds.c}
+
+É pedido que o código do ficheiro \texttt{main\_leds.c} seja alterado de forma a que o \textit{rotate} seja feito no sentido contrário ao original. O código após essa alteração é o \autoref{code:main_leds} e funcionou como previsto.
+
+Este código começa por inicializar a \textit{driver} do periférico GPIO e definir todos os seus sinais como outputs. De seguida, a execução fica ``presa'' num ciclo que cada vez que é executado faz um \textit{rotate} para a direita e depois o MicroBlaze escreve o novo valor para o periférico, que polariza os LEDs apropriadamente. É usado um \textit{delay} entre iterações do ciclo para que os LEDs possam ser vistos a mudar em vez de aparentarem estar todos acesos (com menor intensidade). Este \textit{delay} é feito com um ciclo que faz uma contagem de \texttt{0} ao valor de \texttt{LED\_DELAY}. Como este ciclo está vazio é importante que o código seja compilado sem optimizações porque caso contrário este ciclo pode ser suprimido e os LEDs não terão o comportamento previsto.
 
 \subsection{Processamento de Imagem por Software e Hardware}
 \subsubsection{Histograma}
