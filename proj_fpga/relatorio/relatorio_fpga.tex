@@ -111,6 +111,9 @@ Está tudo preparado para programar a FPGA e correr o executável. Neste caso se
 
 Este código começa por inicializar a \textit{driver} do periférico GPIO e definir todos os seus sinais como outputs. De seguida, a execução fica ``presa'' num ciclo que cada vez que é executado faz um \textit{rotate} para a direita e depois o MicroBlaze escreve o novo valor para o periférico, que polariza os LEDs apropriadamente. É usado um \textit{delay} entre iterações do ciclo para que os LEDs possam ser vistos a mudar em vez de aparentarem estar todos acesos (com menor intensidade). Este \textit{delay} é feito com um ciclo que faz uma contagem de \texttt{0} ao valor de \texttt{LED\_DELAY}. Como este ciclo está vazio é importante que o código seja compilado sem optimizações porque caso contrário este ciclo pode ser suprimido e os LEDs não terão o comportamento previsto.
 
+\subsection{Interface com a Câmara}
+% preparação da câmara para usar nas fases seguintes
+
 \subsection{Processamento de Imagem por Software e Hardware}
 \subsubsection{Histograma}
 
