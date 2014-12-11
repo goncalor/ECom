@@ -154,11 +154,13 @@ De maneira a não alocar a memória necessária a um buffer intermédio (uma vez
 D = K \ast I - \widetilde{K} \ast I
 \]
 
-Como $K_{i,j} = \widetilde{K}_{(2-j),(2-i)}$, fizemos a simplificação adicional de não construir a matriz $\widetilde{K}$.
+Como $K_{i,j} = \widetilde{K}_{(2-j),(2-i)}$, fizemos a simplificação adicional de não construir a matriz $\widetilde{K}$. Como as duas matrizes possuem uma linha e uma coluna de zeros, o espaço alocado para a matriz foi $2\times2$ em vez de $3\times3$. O algoritmo foi, consequentemente, adaptado.
 
 Uma vez feitas as operações sobre os dados, o resultado é normalizado, de maneira a que o valor mais claro corresponda a um píxel branco, e o mais escuro a um píxel preto.
 
-\lstinputlisting[language=C]{../embossing.c}
+Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas linhas e colunas que não recebem informação suficiente, pelo que não têm significado.
+
+\lstinputlisting[language=C,label=code:embossing, caption=\texttt{embossing.c}]{../embossing.c}
 
 
 
