@@ -12,7 +12,7 @@
 \usepackage{amsmath}
 %\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 %\usepackage{rotating}
-%\usepackage{subcaption}
+\usepackage{subcaption}
 \usepackage{listings}
 \usepackage{color}
 
@@ -67,7 +67,7 @@ A realização do projecto permitirá a aprendizagem de como implementar um \tex
 \section{Material Utilizado}
 \subsection*{Hardware}
 \begin{itemize}
-\item câmara VGA
+\item câmara de 1.3 Mpx ($1280\times1024\times24$) e \textit{breakout board}
 \item computador com Xilinx EDK
 \item placa Digilent S3 com Xilinx FPGA XC3S1000-4
 \item monitor com entrada VGA
@@ -114,17 +114,52 @@ Este código começa por inicializar a \textit{driver} do periférico GPIO e def
 \subsection{Interface com a Câmara}
 % preparação da câmara para usar nas fases seguintes
 
-O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}. São depois adicionados duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo \cite{bib:appnoteXilinxFSL} nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar o IP adicionado pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
+O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}, que se referem respectivamente à câmara e ao monitor VGA. São depois adicionadas duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo \cite{bib:appnoteXilinxFSL} nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar IP adicionada pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
 
 O MicroBlaze é configurado para usar um multiplicador de 32 bits, divisão inteira e uma \textit{stream} FSL. De seguida, fazem-se as interligações necessárias entre o MicroBlaze, a interface VGA e a câmara. São ainda actualizadas as \textit{constraints} do ficheiro \texttt{.ucf} do projecto. Gera-se a \textit{bitstream}, que é exportada para o SDK.
 
 Da mesma forma que na Secção~\ref{subsec:LEDs} foi adicionado o ficheiro \texttt{mail\_leds.c}, no SDK adiciona-se agora o ficheiro \texttt{negative.c}. Liga-se a Digilent S3 à placa da câmara, programa-se a FPGA e corre-se o software. No monitor vê-se a imagem da câmara e por baixo a mesma imagem mas com escala de cinzentos invertida.
 
-\subsection{Processamento de Imagem por Software e Hardware}
-\subsubsection{Histograma}
+O código do \texttt{negative.c} não é aqui incluído porque não foi alterado. No entanto esse código serve de base para o trabalho realizado nas Secções~\ref{subsec:histograma}~e~\ref{subsec:histograma}.
 
+\subsection{Processamento de Imagem por Software}
+\subsubsection{Histograma}
+\label{subsec:histograma}
+
+Nesta parte do trabalho pretendemos implementar uma aplicação que faça um histograma dos níveis de cinzento da imagem capturada. A imagem capturada tem como dimensões $128\times64\times256$, ou seja 128 bits de largura, 64 de altura e 256 níveis de cinzento.
+
+O histograma deverá ser uma representação gráfica do número de vezes que cada nível de cinzento aparece numa imagem capturada. Para fazer esta contagem a imagem tem que ser varrida e um vector de contagens é inializado a zero e depois incrementado de acordo com o varrimento que é feito.
+
+Como já referido a imagem que é capturada tem 256 níveis de cinzento. No monitor a área que temos para representar o histograma é de $128\times64$ px. Escolhe-se então o eixo horizontal para fazer a representação de cada valor de cinzento---visto que permite representar mais valores---e o vertical para o número de contagens. No entanto a resolução do eixo horizontal não chega para representar todos os tons. Consequentemente é preciso colapsar dois tons de cinzento para uma mesma coluna do monitor. Convenciona-se então que cada coluna do monitor representa o valor de dois tons de cinzento consecutivos, i.e.\ no índice \texttt{0} do vector \texttt{histogram} do \autoref{code:histograma} encontram-se as contagens dos níveis de cinzento \texttt{0} e \texttt{1}; no índice \texttt{1} as contagens dos tons \texttt{2} e \texttt{3}; e assim por diante.
+
+O número máximo de contagens que pode existir para cada tom de cinzento é $128\times64 = 2^{13}$, pelo que cada valor do vector \texttt{histogram} tem que ter pelo menos 13 bits, o que numa arquitectura de 32 bits corresponderia ao tipo \texttt{short}. O facto de no monitor termos apenas 64 linhas para representar o número de contagens leva a que seja preciso multiplicar por um factor de escala cada contagem. Isso poderia ser feito com um factor de escala constante com a desvantagem de que em algumas situações pode ser difícil visualizar algumas barras dependendo da calibração escolhida para esse factor de escala. Outra abordagem é o factor de escala ser escolhido dinamicamente, ou seja ser escolhido de forma a que a contagem máxima em cada instante preencha os 64 px de altura. Com esta abordagem temos a desvantagem de que ao ser varrida a imagem temos que calcular qual os dois tons consecutivos com o máximo de ocorrências; e não é possível comparar quantitativamente as várias imagens recolhidas por não terem a mesma escala. Escolheu-se um factor de escala dinâmica por permitir uma representação mais versátil.
+
+A implementação por software é relativamente simples (ver \autoref{code:histograma}). A imagem começa por ser recebida pela \textit{bus} FSL e guardada no vector \texttt{image}. De seguida é feito um varrimento linear de \texttt{image} e são obtidas as contagens para tons de cinza consecutivos. De seguida é feita a normalização das contagens, o que envolve descobrir qual o grupo de tons com o máximo de contagens e escalar todas as contagens.
+
+Resta preencher o vector \texttt{outimage} com a representação do histograma que será vista no monitor. Para isso basta varrer \texttt{outimage} escrevendo em cada índice \texttt{0} (preto) nas regiões cujo número da linha esteja abaixo ou seja igual ao número de contagens; e \texttt{255} (branco) nos pixeis das regiões acima do número de contagens. Isto resulta num histograma preto sobre fundo branco. \texttt{outimage} está assim pronta a ser enviada via FSL para a interface VGA do monitor.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.40\textwidth}
+		\centering
+		%\includegraphics[width=\linewidth]{}
+		\caption{}
+		%\label{fig:}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.40\textwidth}
+		\centering
+		%\includegraphics[width=\linewidth]{}
+		\caption{}
+		%\label{fig:}
+	\end{subfigure}
+	\caption{(a) imagem capturada e (b) respectivo histograma}
+	\label{fig:histograma}
+\end{figure}
+
+\lstinputlisting[language=C,label=code:histograma, caption=\texttt{histogram.c}]{../histogram.c}
 
 \subsubsection{Relevo (\textit{embossing})}
+\label{subsec:relevo}
 
 O algoritmo especificado no enunciado é o seguinte:
 
@@ -169,6 +204,7 @@ Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas li
 \lstinputlisting[language=C,label=code:embossing, caption=\texttt{embossing.c}]{../embossing.c}
 
 
+\subsection{Processamento de Imagem por Hardware}
 
 \section{Conclusão e Observações}
 Embora o projecto não tenha grande utilidade prática na forma em que foi implementado (demasiados componentes de grande dimensão necessários para poder usar e com lenta iniciação) o valor lúdico é importante e não seria complexo adaptar o sistema usado a dimensões muito inferiores e de mais prática utilização. 
