@@ -64,7 +64,7 @@
 \section{Introdução}
 Este projecto tem como principal objectivo fazer processamento de imagem recorrendo a uma placa Digilent S3 e a uma câmara com interface VGA. A placa Digilent S3 é uma placa de prototipagem com FPGA que nos permite implementar um processador MicroBlaze. O MicroBlaze comunica com a câmara para fazer o processamento da imagem capturada, que é mostrada num monitor através da saída VGA do dispositivo.
 
-A realização do projecto permitirá a aprendizagem de como implementar um \textit{general purpose processor} como o MicroBlaze numa FPGA, como programar (pelo software providenciado pela Xilinx\textregistered) e utilizar periféricos com esse processador (neste caso a câmara). Aprendemos também como fazer algumas operações simples de processamento de imagem, Histograma e Embossing.
+A realização do projecto permitirá a aprendizagem de como implementar um \textit{general purpose processor} como o MicroBlaze numa FPGA, como programar (pelo software providenciado pela Xilinx\textregistered) e utilizar periféricos com esse processador (neste caso a câmara e a interface VGA). Aprendemos também como fazer algumas operações simples de processamento de imagem, Histograma e Embossing.
 
 
 \section{Material Utilizado}
@@ -76,14 +76,16 @@ A realização do projecto permitirá a aprendizagem de como implementar um \tex
 \item monitor com entrada VGA
 \end{itemize}
 
-A placa Digilent S3 conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
+Uma FPGA (\textit{Field Programmable Gate Array}) é um circuito integrado desenhado para ser configurado pelo utilizador depois do fabrico de forma a implementar circuitos digitais. Estes circuitos são normalmente desenhados por via de uma linguagem de descrição de \textit{Hardware} como VHDL ou Verilog. O utilizador pode depois usar o \textit{software} fornecido pelo fabricante para traduzir o circuito e configurar a FPGA utilizada. Estes dispositivos contêm muitos blocos lógicos, como LUT's, portas lógicas simples, somadores e multiplicadores, que podem ser activados e ligados entre si de várias formas para implementar o circuito desejado. Podem também, como é o caso, ter funções analógicas como DAC's e ADC's. Estas capacidades tornam as FPGA's num dispositivo extremamente útil para a prototipagem de circuitos digitais ou implementações de baixo custo em produtos fabricados em pequenas quantidades.   
+
+A placa Digilent S3 usada inclui uma FPGA Xilinx FPGA XC3S1000-4 e conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
 
 \subsection*{Software}
 O software utilizado neste projecto foi o Xilinx Platform Studio (XPS) e o Xilinx Software Development Kit (SDK), ambos incluídos no Xilinx Embedded Development Kit (EDK). No XPS são feitas as ligações e algumas configurações da FPGA e no SDK é desenvolvido o software para o MicroBlaze.
 
 \section{Especificações do Projecto}
 
-A FPGA (\textit{Field Programmable Gate Array}) utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan-3, com 1000K (ou seja, 1M) portas de sistema, com \textit{Speed Grade} de -4, que corresponde a \textit{Standard Performance}. O relógio de sistema funciona a 326 MHz, existindo no dispositivo 4 \textit{Digital Clock Managers}, cada um equipado com um \textit{Delay Locked Loop}\cite{bib:s3datasheet}.
+A FPGA utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan-3, com 1000K (ou seja, 1M) portas de sistema, com \textit{Speed Grade} de -4, que corresponde a \textit{Standard Performance}. O relógio de sistema funciona a 326 MHz, existindo no dispositivo 4 \textit{Digital Clock Managers}, cada um equipado com um \textit{Delay Locked Loop}\cite{bib:s3datasheet}.
 
 A câmara VGA é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA.
 
@@ -209,20 +211,19 @@ Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas li
 
 \subsection{Processamento de Imagem por Hardware}
 
+\subsection{Análise de Resultados}
+
 \section{Conclusão e Observações}
-Embora o projecto não tenha grande utilidade prática na forma em que foi implementado (demasiados componentes de grande dimensão necessários para poder usar e com lenta iniciação) o valor lúdico é importante e não seria complexo adaptar o sistema usado a dimensões muito inferiores e de mais prática utilização. 
+Embora o projecto não utilidade prática na forma em que foi implementado (demasiados componentes de grande dimensão necessários para poder usar e com lenta iniciação) o valor lúdico é importante. Não seria complexo, no entanto, alterar o sistema usado para um de dimensões muito inferiores e de mais prática utilização. 
 
-A volatilidade da memória da placa obriga a utilização de um computador com o software instalado cada vez que se quer iniciar o sistema. Se for utilizado um tipo de memória não volátil, é possível retirar o computador do sistema. O monitor pode ser trocado por um LCD moderno de muito menores dimensões sem qualquer tipo de redesenho do sistema, desde que tenha uma interface VGA. Finalmente, todo o sistema pode tornar-se portátil com o uso de uma bateria, uma vez que os componentes necessários têm baixo consumo, sendo ainda mais prático se se recorrer a uma placa de prototipagem de menores dimensões ou, no caso da solução VHDL, implementar o hardware descrito pelo código. (EMBORA PROVAVELMENTE ISTO NAO FIQUE FEITO A TEMPO)
+A volatilidade da memória da placa obriga a utilização de um computador com o software de programação instalado cada vez que se quer iniciar o sistema. Se for utilizado um tipo de memória não volátil, é possível retirar o computador do sistema. O monitor pode ser trocado por um LCD moderno de muito menores dimensões sem qualquer tipo de redesenho do sistema, desde que tenha uma interface VGA. Finalmente, todo o sistema pode tornar-se portátil com o uso de uma bateria, uma vez que os componentes necessários têm baixo consumo, sendo ainda mais prático se se recorrer a uma placa de prototipagem de menores dimensões. No caso da solução VHDL é ainda possível, embora caro em pequenas quantidades, implementar o hardware descrito pelo código. 
 
-Estas alterações são relativamente simples e aumentariam muito a utilidade do projecto se a intenção fosse a de fazer um produto. 
-Foi notada a baixa performance da implementação por software, que está limitada pela arquitectura do MicroBlaze e também pela performance da placa onde o MicroBlaze foi implementado. 
+Estas alterações são relativamente simples e aumentariam muito a utilidade prática do projecto, se a intenção fosse a de criar um produto. 
+Foi notada a baixa performance da implementação por software, que está limitada pela arquitectura do MicroBlaze e também pela performance da placa onde o MicroBlaze foi implementado. A versão VHDL permite ganhos significativos de performence ao custo de maior complexidade de implementação.   
 
-No caso deste projecto a implementação por hardware seria claramente a mais adequada. O processamento feito é relativamente simples, o que diminui a vantagem do uso de um\textit{general purpose processor}, que é menos eficiente e tem uma performance muito inferior. É também relativamente fácil de paralelizar ambos os tipos de processamento, o que é ideal para implementações hardware. Na nossa opinião, a utilização de um \textit{general purpose processor} para a implementação final do sistema só seria justificada se a produção fosse de escala extremamente reduzida (o que seria bastante provável)
+No caso deste projecto a implementação por hardware seria claramente a mais adequada para um produto. O processamento feito é relativamente simples, o que diminui a vantagem do uso de um\textit{general purpose processor}, que é menos eficiente e tem uma performance inferior. É também relativamente fácil de paralelizar ambos os tipos de processamento, o que é ideal para implementações hardware. Na nossa opinião, a utilização de um \textit{general purpose processor} para a implementação final do sistema só seria justificada se a produção fosse de escala extremamente reduzida.
 
-Voltando ao objectivo lúdico do projecto, permitiu comparar as vantagens e desvantagens de implementações por hardware e software, assim como aprender vários dos componentes e softwares utilizados e entender como são feitos os tipos de processamento de imagem implementados.
-
-
-
+Voltando ao objectivo lúdico do projecto, permitiu comparar as vantagens e desvantagens de implementações por hardware e software, assim como aprender vários dos componentes e programas utilizados e entender como são feitos os tipos de processamento de imagem implementados. 
 
 
 \bibliographystyle{plain}
