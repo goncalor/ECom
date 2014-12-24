@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass[a4paper,12pt]{article}
 
 \usepackage[portuguese]{babel}
 \usepackage{comment}
@@ -15,23 +15,26 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{color}
+\usepackage[margin=1.1in]{geometry} %margens da página
 
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{keywordcolor}{rgb}{0,0.4,0.7}
+\definecolor{commentcolor}{rgb}{0.4,0.4,0.4} 	
+\definecolor{mygray}{rgb}{0.5,0.5,0.5} 	% line counter color
+\definecolor{mymauve}{rgb}{0.55,0.28,0.62}	% string color
+\definecolor{codebackground}{rgb}{0.95,0.95,0.95} 
 
 \lstset{ %
-  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  backgroundcolor=\color{codebackground},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
   basicstyle=\ttfamily \footnotesize,        % the size of the fonts that are used for the code
   breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
   breaklines=true,                 % sets automatic line breaking
   captionpos=b,                    % sets the caption-position to bottom
-  commentstyle=\color{mygreen},    % comment style
+  commentstyle=\color{commentcolor},    % comment style
   deletekeywords={...},            % if you want to delete keywords from the given language
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
   extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
   keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
+  keywordstyle=\color{keywordcolor},       % keyword style
   numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
   numbersep=5pt,                   % how far the line-numbers are from the code
   numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
