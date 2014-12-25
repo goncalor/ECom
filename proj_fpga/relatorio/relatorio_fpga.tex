@@ -76,9 +76,9 @@ A realização do projecto permitirá a aprendizagem de como implementar um \tex
 \item monitor com entrada VGA
 \end{itemize}
 
-Uma FPGA (\textit{Field Programmable Gate Array}) é um circuito integrado desenhado para ser configurado pelo utilizador depois do fabrico de forma a implementar circuitos digitais. Estes circuitos são normalmente desenhados por via de uma linguagem de descrição de \textit{Hardware} como VHDL ou Verilog. O utilizador pode depois usar o \textit{software} fornecido pelo fabricante para traduzir o circuito e configurar a FPGA utilizada. Estes dispositivos contêm muitos blocos lógicos, como LUT's, portas lógicas simples, somadores e multiplicadores, que podem ser activados e ligados entre si de várias formas para implementar o circuito desejado. Podem também, como é o caso, ter funções analógicas como DAC's e ADC's. Estas capacidades tornam as FPGA's num dispositivo extremamente útil para a prototipagem de circuitos digitais ou implementações de baixo custo em produtos fabricados em pequenas quantidades.   
+Uma FPGA (\textit{Field Programmable Gate Array}) é um circuito integrado desenhado para ser configurado pelo utilizador depois do fabrico de forma a implementar circuitos digitais. Estes circuitos são normalmente desenhados por via de uma linguagem de descrição de \textit{Hardware} como VHDL ou Verilog. O utilizador pode depois usar o \textit{software} fornecido pelo fabricante para traduzir o circuito e configurar a FPGA utilizada. Estes dispositivos contêm muitos blocos lógicos, como LUT's, portas lógicas simples, somadores e multiplicadores, que podem ser activados e ligados entre si de várias formas para implementar o circuito desejado. Podem também ter funções analógicas como DAC's e ADC's. Estas capacidades tornam as FPGA's num dispositivo extremamente útil para a prototipagem de circuitos digitais ou implementações de baixo custo em produtos fabricados em pequenas quantidades.   
 
-A placa Digilent S3 usada inclui uma FPGA Xilinx FPGA XC3S1000-4 e conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
+A placa usada neste projecto, a Digilent S3,  inclui uma FPGA Xilinx FPGA XC3S1000-4 e conta com 8 LEDs que são usados numa fase inicial do trabalho (Secção~\ref{subsec:LEDs}). Conta também com 3 conjuntos de 40 pinos, um dos quais é usado para ligar a placa da câmara à da FPGA.
 
 \subsection*{Software}
 O software utilizado neste projecto foi o Xilinx Platform Studio (XPS) e o Xilinx Software Development Kit (SDK), ambos incluídos no Xilinx Embedded Development Kit (EDK). No XPS são feitas as ligações e algumas configurações da FPGA e no SDK é desenvolvido o software para o MicroBlaze.
@@ -114,7 +114,7 @@ Está tudo preparado para programar a FPGA e correr o executável. Neste caso se
 
 É pedido que o código do ficheiro \texttt{main\_leds.c} seja alterado de forma a que o \textit{rotate} seja feito no sentido contrário ao original. O código após essa alteração é o \autoref{code:main_leds} e funcionou como previsto.
 
-Este código começa por inicializar a \textit{driver} do periférico GPIO e definir todos os seus sinais como outputs. De seguida, a execução fica ``presa'' num ciclo que cada vez que é executado faz um \textit{rotate} para a direita e depois o MicroBlaze escreve o novo valor para o periférico, que polariza os LEDs apropriadamente. É usado um \textit{delay} entre iterações do ciclo para que os LEDs possam ser vistos a mudar em vez de aparentarem estar todos acesos (com menor intensidade). Este \textit{delay} é feito com um ciclo que faz uma contagem de \texttt{0} ao valor de \texttt{LED\_DELAY}. Como este ciclo está vazio é importante que o código seja compilado sem optimizações porque caso contrário este ciclo pode ser suprimido e os LEDs não terão o comportamento previsto.
+Este código começa por inicializar a \textit{driver} do periférico GPIO e definir todos os seus sinais como outputs. De seguida, a execução fica presa num ciclo que cada vez que é executado faz um \textit{rotate} para a direita e depois o MicroBlaze escreve o novo valor para o periférico, que polariza os LEDs apropriadamente. É usado um \textit{delay} entre iterações do ciclo para que os LEDs possam ser vistos a mudar em vez de aparentarem estar todos acesos (com menor intensidade). Este \textit{delay} é feito com um ciclo que faz uma contagem de \texttt{0} ao valor de \texttt{LED\_DELAY}. Como este ciclo está vazio é importante que o código seja compilado sem optimizações porque caso contrário este ciclo pode ser suprimido e os LEDs não terão o comportamento previsto.
 
 \subsection{Interface com a Câmara}
 % preparação da câmara para usar nas fases seguintes
@@ -210,6 +210,14 @@ Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas li
 
 
 \subsection{Processamento de Imagem por Hardware}
+Na parte final do projecto alterou-se um ficheiro de VHDL para usar uma solução por hardware da computação do histograma nas configurações do nosso sistema. O ficheiro fornecido fazia o cálculo para 256 tons de cinzento diferentes, o que teve de ser alterado para caber nas 128 linhas que temos disponíveis no sistema de \textit{display}. A versão original do ficheiro fazia a contagem por via de uma BRAM com 256 endereços, cada um com o número de ocorrências do tom respectivo. Quando um tom era encontrado, a posição de memória respectiva era incrementada. Do lado do \textit{MicroBlaze} eram lidas as 256 posições e feito a apresentação da informação no \textit{display}. 
+
+Como na implementação por software, combinámos os tons dois a dois, pelo que cada linha \textit{i} do histograma representa o tons de cinzento \textit{2i} e \textit{2i+1}. Os incrementos passaram assim a ser feitos em apenas 128 endereços da BRAM e o \textit{MicroBlaze} passou a ler apenas esses 128 endereços. Esta solução reduz a metade o número de leituras feitas pelo \textit{MicroBlaze}, melhorando a performance.
+
+Código do VHDL alterado: 
+
+NÃO ESQUECER 
+
 
 \subsection{Análise de Resultados}
 
