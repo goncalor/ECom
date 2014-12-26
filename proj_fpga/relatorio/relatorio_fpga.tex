@@ -96,12 +96,12 @@ A FPGA utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan
 \end{figure}
 \FloatBarrier
 
-A câmara é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA. O monitor é ligado através de uma ligação VGA e sendo esta uma ligação analógica é necessária a utilização de um \textit{Digital to Analog Converter} (DAC) entre os pinos de \textit{I/O} da placa e a ligação ao monitor. O DAC usado no projecto é uma escada de resistências do tipo R-2R com 8 bits, esquema na figura abaixo: 
+A câmara é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA. O monitor é ligado através de uma ligação VGA e sendo esta uma ligação analógica é necessária a utilização de um \textit{Digital to Analog Converter} (DAC) entre os pinos de \textit{I/O} da placa e a ligação ao monitor. O DAC usado no projecto é uma escada de resistências  com 8 bits, esquema na figura abaixo: 
 
 \begin{figure}[h]
 	\centering	
 	\includegraphics[ scale=0.4]{imagens/esquema_dac.png}
-	\caption{DAC R-2R usado no projecto}
+	\caption{DAC usado no projecto}
 	\label{fig:esquemaDAC}
 \end{figure}
 \FloatBarrier
