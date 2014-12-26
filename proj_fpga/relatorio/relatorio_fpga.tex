@@ -84,15 +84,30 @@ A placa usada neste projecto, a Digilent S3,  inclui uma FPGA Xilinx FPGA XC3S10
 \subsection*{Software}
 O software utilizado neste projecto foi o Xilinx Platform Studio (XPS) e o Xilinx Software Development Kit (SDK), ambos incluídos no Xilinx Embedded Development Kit (EDK). No XPS são feitas as ligações e algumas configurações da FPGA e no SDK é desenvolvido o software para o MicroBlaze.
 
-\section{Especificações do Projecto}
+\section{Layout e especificações do Projecto}
 
 A FPGA utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan-3, com 1000K (ou seja, 1M) portas de sistema, com \textit{Speed Grade} de -4, que corresponde a \textit{Standard Performance}. O relógio de sistema funciona a 326 MHz, existindo no dispositivo 4 \textit{Digital Clock Managers}, cada um equipado com um \textit{Delay Locked Loop}.
 
-A câmara VGA é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA.
+\begin{figure}[h]
+	\centering	
+	\includegraphics[scale = 0.3]{imagens/esquema_projecto.png}
+	\caption{Esquema geral do sistema}
+	\label{fig:esquemaGeral}
+\end{figure}
+\FloatBarrier
+
+A câmara é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA. O monitor é ligado através de uma ligação VGA e sendo esta uma ligação analógica é necessária a utilização de um \textit{Digital to Analog Converter} (DAC) entre os pinos de \textit{I/O} da placa e a ligação ao monitor. O DAC usado no projecto é uma escada de resistências do tipo R-2R com 8 bits, esquema na figura abaixo: 
+
+\begin{figure}[h]
+	\centering	
+	\includegraphics[ scale=0.4]{imagens/esquema_dac.png}
+	\caption{DAC R-2R usado no projecto}
+	\label{fig:esquemaDAC}
+\end{figure}
+\FloatBarrier
 
 O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada para implementação em FPGAs proprietárias da Xilinx. O ambiente de desenvolvimento disponibilizado permite configurar as ligações do sistema e dos barramentos de dados, bem como executar binários compilados no próprio ambiente.
 
-\section{Layout e explicação do sistema}
 
 
 \section{Implementação do Projecto}
@@ -120,16 +135,16 @@ Está tudo preparado para programar a FPGA e correr o executável. Neste caso se
 
 Este código começa por inicializar a \textit{driver} do periférico GPIO e definir todos os seus sinais como outputs. De seguida, a execução fica presa num ciclo que cada vez que é executado faz um \textit{rotate} para a direita e depois o MicroBlaze escreve o novo valor para o periférico, que polariza os LEDs apropriadamente. É usado um \textit{delay} entre iterações do ciclo para que os LEDs possam ser vistos a mudar em vez de aparentarem estar todos acesos (com menor intensidade). Este \textit{delay} é feito com um ciclo que faz uma contagem de \texttt{0} ao valor de \texttt{LED\_DELAY}. Como este ciclo está vazio é importante que o código seja compilado sem optimizações porque caso contrário este ciclo pode ser suprimido e os LEDs não terão o comportamento previsto.
 
-\subsection{Interface com a Câmara}
+\subsection{Interface com a Câmara e saída VGA}
 % preparação da câmara para usar nas fases seguintes
 
-O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}, que se referem respectivamente à câmara e ao monitor VGA. São depois adicionadas duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo as app notes do Xilinx nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar IP adicionada pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
+O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}, que se referem respectivamente à câmara e ao monitor VGA. São depois adicionadas duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo as app notes do Xilinx, nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar IP adicionada pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
 
 O MicroBlaze é configurado para usar um multiplicador de 32 bits, divisão inteira e uma \textit{stream} FSL. De seguida, fazem-se as interligações necessárias entre o MicroBlaze, a interface VGA e a câmara. São ainda actualizadas as \textit{constraints} do ficheiro \texttt{.ucf} do projecto. Gera-se a \textit{bitstream}, que é exportada para o SDK.
 
 Da mesma forma que na Secção~\ref{subsec:LEDs} foi adicionado o ficheiro \texttt{mail\_leds.c}, no SDK adiciona-se agora o ficheiro \texttt{negative.c}. Liga-se a Digilent S3 à placa da câmara, programa-se a FPGA e corre-se o software. No monitor vê-se a imagem da câmara e por baixo a mesma imagem mas com escala de cinzentos invertida.
 
-O código do \texttt{negative.c} não é aqui incluído porque não foi alterado. No entanto esse código serve de base para o trabalho realizado nas Secções~\ref{subsec:histograma}~e~\ref{subsec:histograma}.
+O código do \texttt{negative.c} não é aqui incluído porque não foi alterado. No entanto esse código serve de base para o trabalho realizado nas Secções~\ref{subsec:histograma}~e~\ref{subsec:relevo}.
 
 \subsection{Processamento de Imagem por Software}
 \subsubsection{Histograma}
@@ -141,12 +156,15 @@ O histograma deverá ser uma representação gráfica do número de vezes que ca
 
 Como já referido a imagem que é capturada tem 256 níveis de cinzento. No monitor a área que temos para representar o histograma é de $128\times64$ px. Escolhe-se então o eixo horizontal para fazer a representação de cada valor de cinzento---visto que permite representar mais valores---e o vertical para o número de contagens. No entanto a resolução do eixo horizontal não chega para representar todos os tons. Consequentemente é preciso colapsar dois tons de cinzento para uma mesma coluna do monitor. Convenciona-se então que cada coluna do monitor representa o valor de dois tons de cinzento consecutivos, i.e.\ no índice \texttt{0} do vector \texttt{histogram} do \autoref{code:histograma} encontram-se as contagens dos níveis de cinzento \texttt{0} e \texttt{1}; no índice \texttt{1} as contagens dos tons \texttt{2} e \texttt{3}; e assim por diante.
 
+\clearpage
 \lstinputlisting[language=C,label=code:histograma, basicstyle=\footnotesize, caption={histogram (pseudo-código)}]{codigo/histogram.c}
+
 
 O número máximo de contagens que pode existir para cada tom de cinzento é $128\times64 = 2^{13}$, pelo que cada valor do vector \texttt{histogram} tem que ter pelo menos 13 bits, o que numa arquitectura de 32 bits corresponderia ao tipo \texttt{short}. O facto de no monitor termos apenas 64 linhas para representar o número de contagens leva a que seja preciso multiplicar por um factor de escala cada contagem. Isso poderia ser feito com um factor de escala constante com a desvantagem de que em algumas situações pode ser difícil visualizar algumas barras dependendo da calibração escolhida para esse factor de escala. Outra abordagem é o factor de escala ser escolhido dinamicamente, ou seja ser escolhido de forma a que a contagem máxima em cada instante preencha os 64 px de altura. Com esta abordagem temos a desvantagem de que ao ser varrida a imagem temos que calcular qual os dois tons consecutivos com o máximo de ocorrências; e não é possível comparar quantitativamente as várias imagens recolhidas por não terem a mesma escala. Escolheu-se um factor de escala dinâmica por permitir uma representação mais versátil.
 
 A implementação por software é relativamente simples (ver \autoref{code:histograma}). A imagem começa por ser recebida pela \textit{bus} FSL e guardada no vector \texttt{image}. De seguida é feito um varrimento linear de \texttt{image} e são obtidas as contagens para tons de cinza consecutivos. De seguida é feita a normalização das contagens, o que envolve descobrir qual o grupo de tons com o máximo de contagens e escalar todas as contagens.
 
+\clearpage
 Resta preencher o vector \texttt{outimage} com a representação do histograma que será vista no monitor. Para isso basta varrer \texttt{outimage} escrevendo em cada índice \texttt{0} (preto) nas regiões cujo número da linha esteja abaixo ou seja igual ao número de contagens; e \texttt{255} (branco) nos pixeis das regiões acima do número de contagens. Isto resulta num histograma preto sobre fundo branco. \texttt{outimage} está assim pronta a ser enviada via FSL para a interface VGA do monitor.
 
 \begin{figure}[h]
@@ -163,7 +181,7 @@ Resta preencher o vector \texttt{outimage} com a representação do histograma q
 		\caption{}
 		%\label{fig:}
 	\end{subfigure}
-	\caption{(a) imagem capturada e (b) respectivo histograma (riscas diagonais não fazem parte da imagem, são um artefacto do método de captura)}
+	\caption{(a) imagem capturada e (b) respectivo histograma (as riscas diagonais não fazem parte da imagem, são um artefacto do método de captura)}
 	\label{fig:histograma}
 \end{figure}
 
@@ -207,6 +225,7 @@ D = K \ast I - \widetilde{K} \ast I
 
 Como $K_{i,j} = \widetilde{K}_{(2-j),(2-i)}$, fizemos a simplificação adicional de não construir a matriz $\widetilde{K}$. Como as duas matrizes possuem uma linha e uma coluna de zeros, o espaço alocado para a matriz foi $2\times2$ em vez de $3\times3$. O algoritmo foi, consequentemente, adaptado.
 
+\clearpage
 \lstinputlisting[language=C,label=code:embossing, basicstyle=\footnotesize,  caption={embossing (pseudo-código)}]{codigo/embossing.c}
 
 Uma vez feitas as operações sobre os dados, o resultado é normalizado, de maneira a que o valor mais claro corresponda a um píxel branco, e o mais escuro a um píxel preto.
@@ -227,7 +246,7 @@ Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas li
 		\caption{}
 		%\label{fig:}
 	\end{subfigure}
-	\caption{(a) imagem capturada e (b) respectivo relevo (riscas diagonais não fazem parte da imagem, são um artefacto do método de captura)}
+	\caption{(a) imagem capturada e (b) respectivo relevo (as riscas diagonais não fazem parte da imagem, são um artefacto do método de captura)}
 	\label{fig:relevo}
 \end{figure}
 \FloatBarrier
@@ -243,9 +262,12 @@ Como na implementação por software, combinámos os tons dois a dois, pelo que 
 
 
 \subsection{Análise de Resultados}
+Nenhuma das implementações conseguiu fazer o processamento em tempo real, várias frames eram descartadas porque o buffer era reescrito antes de ser feito o respectivo processamento. Ainda assim as implementações tinham uma fluidez aceitável, sendo possível seguir movimentos em frente à câmara.
+
+A implementação por hardware do histograma era notoriamente mais fluída que por software. Para comparar a performance de ambas as implementações o código foi preparado para que a cada nova frame processada se acendesse o próximo LED, fazendo um \textit{rotate} como no exemplo da secção 4.1. Foram feitos dois vídeos de cerca de 10 segundos, um para cada implementação, a filmar os LED's da placa. Posteriormente foi feita uma média de quantas frames por segundo cada implementação era capaz. Chegou-se à conclusão de que a implementação por hardware era cerca de 30\% mais rápida. O valor calculado é no entanto menor que na realidade, uma vez que ambas as implementações têm o overhead acrescido de controlar os LED's e enviar as frames resultantes para a saída VGA, que é igual em ambas e diminui o impacto da melhoria.
 
 \section{Conclusão e Observações}
-Embora o projecto não utilidade prática na forma em que foi implementado (demasiados componentes de grande dimensão necessários para poder usar e com lenta iniciação) o valor lúdico é importante. Não seria complexo, no entanto, alterar o sistema usado para um de dimensões muito inferiores e de mais prática utilização. 
+Embora o projecto não utilidade prática na forma em que foi implementado (demasiados componentes de grande dimensão necessários para poder usar, com lenta iniciação) o valor lúdico é importante. Não seria complexo, no entanto, alterar o sistema usado para um de dimensões muito inferiores e de mais prática utilização. 
 
 A volatilidade da memória da placa obriga a utilização de um computador com o software de programação instalado cada vez que se quer iniciar o sistema. Se for utilizado um tipo de memória não volátil, é possível retirar o computador do sistema. O monitor pode ser trocado por um LCD moderno de muito menores dimensões sem qualquer tipo de redesenho do sistema, desde que tenha uma interface VGA. Finalmente, todo o sistema pode tornar-se portátil com o uso de uma bateria, uma vez que os componentes necessários têm baixo consumo, sendo ainda mais prático se se recorrer a uma placa de prototipagem de menores dimensões. No caso da solução VHDL é ainda possível, embora caro em pequenas quantidades, implementar o hardware descrito pelo código. 
 
