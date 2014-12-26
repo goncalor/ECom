@@ -15,7 +15,8 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{color}
-\usepackage[margin=1.1in]{geometry} %margens da página
+\usepackage[margin=0.95	in]{geometry} %margens da página
+\usepackage{placeins}
 
 \definecolor{keywordcolor}{rgb}{0,0.4,0.7}
 \definecolor{commentcolor}{rgb}{0.4,0.4,0.4} 	
@@ -85,11 +86,11 @@ O software utilizado neste projecto foi o Xilinx Platform Studio (XPS) e o Xilin
 
 \section{Especificações do Projecto}
 
-A FPGA utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan-3, com 1000K (ou seja, 1M) portas de sistema, com \textit{Speed Grade} de -4, que corresponde a \textit{Standard Performance}. O relógio de sistema funciona a 326 MHz, existindo no dispositivo 4 \textit{Digital Clock Managers}, cada um equipado com um \textit{Delay Locked Loop}\cite{bib:s3datasheet}.
+A FPGA utilizada é uma Xilinx XC3S1000-4, isto é, uma FPGA da família Spartan-3, com 1000K (ou seja, 1M) portas de sistema, com \textit{Speed Grade} de -4, que corresponde a \textit{Standard Performance}. O relógio de sistema funciona a 326 MHz, existindo no dispositivo 4 \textit{Digital Clock Managers}, cada um equipado com um \textit{Delay Locked Loop}.
 
 A câmara VGA é configurada para trabalhar com uma resolução de $128\times64$ píxeis, e o monitor para mostrar a imagem directamente da câmara, bem como o resultado do processamento que sai do MicroBlaze implementado na FPGA.
 
-O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada para implementação em FPGAs proprietárias da Xilinx\textregistered\cite{bib:microblaze}. O ambiente de desenvolvimento disponibilizado permite configurar as ligações do sistema e dos barramentos de dados, bem como executar binários compilados no próprio ambiente.
+O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada para implementação em FPGAs proprietárias da Xilinx. O ambiente de desenvolvimento disponibilizado permite configurar as ligações do sistema e dos barramentos de dados, bem como executar binários compilados no próprio ambiente.
 
 \section{Layout e explicação do sistema}
 
@@ -113,16 +114,16 @@ Está-se agora apto a implementar o software que se queira correr no MicroBlaze.
 
 Está tudo preparado para programar a FPGA e correr o executável. Neste caso se tudo for feito correctamente os LEDs da placa deverão acender e apagar sequencialmente como que fazendo um \textit{rotate} de um bit.
 
-\lstinputlisting[language=C, label=code:main_leds, caption=\texttt{main\_leds.c} após alteração]{codigo/main_leds.c}
+%\lstinputlisting[language=C, label=code:main_leds, caption=\texttt{main\_leds.c} após alteração]{codigo/main_leds.c}
 
-É pedido que o código do ficheiro \texttt{main\_leds.c} seja alterado de forma a que o \textit{rotate} seja feito no sentido contrário ao original. O código após essa alteração é o \autoref{code:main_leds} e funcionou como previsto.
+É pedido que o código do ficheiro \texttt{main\_leds.c} seja alterado de forma a que o \textit{rotate} seja feito no sentido contrário ao original, o que é uma alteração simples, bastando mudar o sentido do shift e alterar a condição de reset.  %O código após essa alteração é o \autoref{code:main_leds} e funcionou como previsto.
 
 Este código começa por inicializar a \textit{driver} do periférico GPIO e definir todos os seus sinais como outputs. De seguida, a execução fica presa num ciclo que cada vez que é executado faz um \textit{rotate} para a direita e depois o MicroBlaze escreve o novo valor para o periférico, que polariza os LEDs apropriadamente. É usado um \textit{delay} entre iterações do ciclo para que os LEDs possam ser vistos a mudar em vez de aparentarem estar todos acesos (com menor intensidade). Este \textit{delay} é feito com um ciclo que faz uma contagem de \texttt{0} ao valor de \texttt{LED\_DELAY}. Como este ciclo está vazio é importante que o código seja compilado sem optimizações porque caso contrário este ciclo pode ser suprimido e os LEDs não terão o comportamento previsto.
 
 \subsection{Interface com a Câmara}
 % preparação da câmara para usar nas fases seguintes
 
-O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}, que se referem respectivamente à câmara e ao monitor VGA. São depois adicionadas duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo \cite{bib:appnoteXilinxFSL} nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar IP adicionada pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
+O trabalho desta secção é construído sobre o projecto criado na Secção~\ref{subsec:LEDs}. No XPS, começa-se por adicionar nova IP fornecedida em conjunto com o enunciado. Os periféricos adicionados à \textit{bus} são \texttt{VGA\_interface} e \texttt{camera\_interface}, que se referem respectivamente à câmara e ao monitor VGA. São depois adicionadas duas \textit{buses} FSL (\textit{fast simplex link}). O motivo pelo qual se usam \textit{buses} FSL é a aplicação a desenvolver ser uma \textit{time-critical application}. Segundo as app notes do Xilinx nestes casos deve ser usado a \textit{bus} FSL em vez da OPB (\textit{on-chip peripheral bus}) para integrar a IP no MicroBlaze. Fazendo isto é depois possível utilizar funções em C para usar IP adicionada pelo utilizador (neste caso \texttt{VGA\_interface} e \texttt{camera\_interface}).
 
 O MicroBlaze é configurado para usar um multiplicador de 32 bits, divisão inteira e uma \textit{stream} FSL. De seguida, fazem-se as interligações necessárias entre o MicroBlaze, a interface VGA e a câmara. São ainda actualizadas as \textit{constraints} do ficheiro \texttt{.ucf} do projecto. Gera-se a \textit{bitstream}, que é exportada para o SDK.
 
@@ -140,6 +141,8 @@ O histograma deverá ser uma representação gráfica do número de vezes que ca
 
 Como já referido a imagem que é capturada tem 256 níveis de cinzento. No monitor a área que temos para representar o histograma é de $128\times64$ px. Escolhe-se então o eixo horizontal para fazer a representação de cada valor de cinzento---visto que permite representar mais valores---e o vertical para o número de contagens. No entanto a resolução do eixo horizontal não chega para representar todos os tons. Consequentemente é preciso colapsar dois tons de cinzento para uma mesma coluna do monitor. Convenciona-se então que cada coluna do monitor representa o valor de dois tons de cinzento consecutivos, i.e.\ no índice \texttt{0} do vector \texttt{histogram} do \autoref{code:histograma} encontram-se as contagens dos níveis de cinzento \texttt{0} e \texttt{1}; no índice \texttt{1} as contagens dos tons \texttt{2} e \texttt{3}; e assim por diante.
 
+\lstinputlisting[language=C,label=code:histograma, basicstyle=\footnotesize, caption={histogram (pseudo-código)}]{codigo/histogram.c}
+
 O número máximo de contagens que pode existir para cada tom de cinzento é $128\times64 = 2^{13}$, pelo que cada valor do vector \texttt{histogram} tem que ter pelo menos 13 bits, o que numa arquitectura de 32 bits corresponderia ao tipo \texttt{short}. O facto de no monitor termos apenas 64 linhas para representar o número de contagens leva a que seja preciso multiplicar por um factor de escala cada contagem. Isso poderia ser feito com um factor de escala constante com a desvantagem de que em algumas situações pode ser difícil visualizar algumas barras dependendo da calibração escolhida para esse factor de escala. Outra abordagem é o factor de escala ser escolhido dinamicamente, ou seja ser escolhido de forma a que a contagem máxima em cada instante preencha os 64 px de altura. Com esta abordagem temos a desvantagem de que ao ser varrida a imagem temos que calcular qual os dois tons consecutivos com o máximo de ocorrências; e não é possível comparar quantitativamente as várias imagens recolhidas por não terem a mesma escala. Escolheu-se um factor de escala dinâmica por permitir uma representação mais versátil.
 
 A implementação por software é relativamente simples (ver \autoref{code:histograma}). A imagem começa por ser recebida pela \textit{bus} FSL e guardada no vector \texttt{image}. De seguida é feito um varrimento linear de \texttt{image} e são obtidas as contagens para tons de cinza consecutivos. De seguida é feita a normalização das contagens, o que envolve descobrir qual o grupo de tons com o máximo de contagens e escalar todas as contagens.
@@ -150,21 +153,20 @@ Resta preencher o vector \texttt{outimage} com a representação do histograma q
 	\centering
 	\begin{subfigure}[b]{0.40\textwidth}
 		\centering
-		%\includegraphics[width=\linewidth]{}
+		\includegraphics[width=\linewidth]{imagens/hist_capturada.png}
 		\caption{}
 		%\label{fig:}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.40\textwidth}
 		\centering
-		%\includegraphics[width=\linewidth]{}
+		\includegraphics[width=\linewidth]{imagens/hist_resultado.png}
 		\caption{}
 		%\label{fig:}
 	\end{subfigure}
-	\caption{(a) imagem capturada e (b) respectivo histograma}
+	\caption{(a) imagem capturada e (b) respectivo histograma (riscas diagonais não fazem parte da imagem, são um artefacto do método de captura)}
 	\label{fig:histograma}
 \end{figure}
 
-\lstinputlisting[language=C,label=code:histograma, caption=\texttt{histogram.c}]{codigo/histogram.c}
 
 \subsubsection{Relevo (\textit{embossing})}
 \label{subsec:relevo}
@@ -205,21 +207,39 @@ D = K \ast I - \widetilde{K} \ast I
 
 Como $K_{i,j} = \widetilde{K}_{(2-j),(2-i)}$, fizemos a simplificação adicional de não construir a matriz $\widetilde{K}$. Como as duas matrizes possuem uma linha e uma coluna de zeros, o espaço alocado para a matriz foi $2\times2$ em vez de $3\times3$. O algoritmo foi, consequentemente, adaptado.
 
+\lstinputlisting[language=C,label=code:embossing, basicstyle=\footnotesize,  caption={embossing (pseudo-código)}]{codigo/embossing.c}
+
 Uma vez feitas as operações sobre os dados, o resultado é normalizado, de maneira a que o valor mais claro corresponda a um píxel branco, e o mais escuro a um píxel preto.
 
-Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas linhas e colunas que não recebem informação suficiente, pelo que não têm significado.
+Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas linhas e colunas (nas margens) que não recebem informação suficiente e consequentemente não têm significado.
 
-\lstinputlisting[language=C,label=code:embossing, caption=\texttt{embossing.c}]{codigo/embossing.c}
-
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.40\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{imagens/emb_capturada.png}
+		\caption{}
+		%\label{fig:}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.40\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{imagens/emb_resultado.png}
+		\caption{}
+		%\label{fig:}
+	\end{subfigure}
+	\caption{(a) imagem capturada e (b) respectivo relevo (riscas diagonais não fazem parte da imagem, são um artefacto do método de captura)}
+	\label{fig:relevo}
+\end{figure}
+\FloatBarrier
 
 \subsection{Processamento de Imagem por Hardware}
 Na parte final do projecto alterou-se um ficheiro de VHDL para usar uma solução por hardware da computação do histograma nas configurações do nosso sistema. O ficheiro fornecido fazia o cálculo para 256 tons de cinzento diferentes, o que teve de ser alterado para caber nas 128 linhas que temos disponíveis no sistema de \textit{display}. A versão original do ficheiro fazia a contagem por via de uma BRAM com 256 endereços, cada um com o número de ocorrências do tom respectivo. Quando um tom era encontrado, a posição de memória respectiva era incrementada. Do lado do \textit{MicroBlaze} eram lidas as 256 posições e feito a apresentação da informação no \textit{display}. 
 
 Como na implementação por software, combinámos os tons dois a dois, pelo que cada linha \textit{i} do histograma representa o tons de cinzento \textit{2i} e \textit{2i+1}. Os incrementos passaram assim a ser feitos em apenas 128 endereços da BRAM e o \textit{MicroBlaze} passou a ler apenas esses 128 endereços. Esta solução reduz a metade o número de leituras feitas pelo \textit{MicroBlaze}, melhorando a performance.
 
-Código do VHDL alterado: 
+%Código do VHDL alterado: 
 
-NÃO ESQUECER 
+%NÃO ESQUECER 
 
 
 \subsection{Análise de Resultados}
