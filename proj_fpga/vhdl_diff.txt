@@ -1,0 +1,12 @@
+315c315
+< 						if addrMB = "011111111" then --all addresses are already clear
+---
+> 						if addrMB = "001111111" then --all addresses are already clear
+330c330
+< 							addrCam <= '0' & DATAOUT; 
+---
+> 							addrCam <= "00" & DATAOUT(7 downto 1); 
+368c368
+< 						if addrMB = "011111111" then --last value is comunicated to the histogram
+---
+> 						if addrMB = "001111111" then --last value is comunicated to the histogram
