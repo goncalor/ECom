@@ -62,7 +62,7 @@
 
 \pagenumbering{arabic}
 \section{Introdução}
-Este projecto tem como principal objectivo fazer processamento de imagem recorrendo a uma placa Digilent S3 e a uma câmara com interface VGA. A placa Digilent S3 é uma placa de prototipagem com FPGA que nos permite implementar um processador MicroBlaze. O MicroBlaze comunica com a câmara para fazer o processamento da imagem capturada, que é mostrada num monitor através da saída VGA do dispositivo.
+Este projecto tem como principal objectivo fazer processamento de imagem em tempo real recorrendo a uma placa Digilent S3 e a uma câmara com interface VGA. A placa Digilent S3 é uma placa de prototipagem com FPGA que nos permite implementar um processador MicroBlaze. O MicroBlaze comunica com a câmara para fazer o processamento da imagem capturada, que é mostrada num monitor através da saída VGA do dispositivo.
 
 A realização do projecto permitirá a aprendizagem de como implementar um \textit{general purpose processor} como o MicroBlaze numa FPGA, como programar (pelo software providenciado pela Xilinx\textregistered) e utilizar periféricos com esse processador (neste caso a câmara e a interface VGA). Aprendemos também como fazer algumas operações simples de processamento de imagem, Histograma e Embossing.
 
@@ -91,6 +91,9 @@ A câmara VGA é configurada para trabalhar com uma resolução de $128\times64$
 
 O microprocessador MicroBlaze trata-se de uma arquitectura de 32 bits, desenhada para implementação em FPGAs proprietárias da Xilinx\textregistered\cite{bib:microblaze}. O ambiente de desenvolvimento disponibilizado permite configurar as ligações do sistema e dos barramentos de dados, bem como executar binários compilados no próprio ambiente.
 
+\section{Layout e explicação do sistema}
+
+
 \section{Implementação do Projecto}
 \subsection{Introdução à FPGA}
 \label{subsec:LEDs}
@@ -110,7 +113,7 @@ Está-se agora apto a implementar o software que se queira correr no MicroBlaze.
 
 Está tudo preparado para programar a FPGA e correr o executável. Neste caso se tudo for feito correctamente os LEDs da placa deverão acender e apagar sequencialmente como que fazendo um \textit{rotate} de um bit.
 
-\lstinputlisting[language=C, label=code:main_leds, caption=\texttt{main\_leds.c} após alteração]{../main_leds.c}
+\lstinputlisting[language=C, label=code:main_leds, caption=\texttt{main\_leds.c} após alteração]{codigo/main_leds.c}
 
 É pedido que o código do ficheiro \texttt{main\_leds.c} seja alterado de forma a que o \textit{rotate} seja feito no sentido contrário ao original. O código após essa alteração é o \autoref{code:main_leds} e funcionou como previsto.
 
@@ -161,7 +164,7 @@ Resta preencher o vector \texttt{outimage} com a representação do histograma q
 	\label{fig:histograma}
 \end{figure}
 
-\lstinputlisting[language=C,label=code:histograma, caption=\texttt{histogram.c}]{../histogram.c}
+\lstinputlisting[language=C,label=code:histograma, caption=\texttt{histogram.c}]{codigo/histogram.c}
 
 \subsubsection{Relevo (\textit{embossing})}
 \label{subsec:relevo}
@@ -206,7 +209,7 @@ Uma vez feitas as operações sobre os dados, o resultado é normalizado, de man
 
 Cada píxel exige dados relativos aos 8 píxeis adjacentes, pelo que há duas linhas e colunas que não recebem informação suficiente, pelo que não têm significado.
 
-\lstinputlisting[language=C,label=code:embossing, caption=\texttt{embossing.c}]{../embossing.c}
+\lstinputlisting[language=C,label=code:embossing, caption=\texttt{embossing.c}]{codigo/embossing.c}
 
 
 \subsection{Processamento de Imagem por Hardware}
