@@ -268,7 +268,11 @@ Assim, foram alteradas as linhas 315, 330 e 368.
 
 Nas linhas 315 e 368, foram alterados os critérios dos ciclos de maneira a terminarem ao atingir 127, em vez de 255, e na linha 330 foi feito o dito agrupamento dos valores por pares.
 
-\lstinputlisting[language=VHDL,label=code:hardhist, basicstyle=\footnotesize,  caption={Histograma via Hardware},firstline=291, lastline=381, firstnumber=291]{../camera_interface.vhd}
+\lstinputlisting[language=VHDL,label=code:hardhist, basicstyle=\footnotesize,  caption={Contexto da linga 315},firstline=315, lastline=321, firstnumber=315]{../camera_interface.vhd}
+
+\lstinputlisting[language=VHDL,label=code:hardhist, basicstyle=\footnotesize,  caption={Contexto da linha 330},firstline=329, lastline=343, firstnumber=329]{../camera_interface.vhd}
+
+\lstinputlisting[language=VHDL,label=code:hardhist, basicstyle=\footnotesize,  caption={Contexto da linha 368},firstline=368, lastline=374, firstnumber=368]{../camera_interface.vhd}
 
 \subsection{Análise de Resultados}
 Nenhuma das implementações conseguiu fazer o processamento em tempo real, várias frames eram descartadas porque o buffer era reescrito antes de ser feito o respectivo processamento. Ainda assim as implementações tinham uma fluidez aceitável, sendo possível seguir movimentos em frente à câmara.
